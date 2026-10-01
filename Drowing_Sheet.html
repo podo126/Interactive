@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제목 없는 스프레드시트 - Google Sheets</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+  body { margin:0; font-family: Arial, sans-serif; display:flex; flex-direction:column; height:100vh; background:#f8f9fa; overflow:hidden; }
+  .header { display:flex; align-items:flex-start; padding:10px 16px 4px; background:#f9fbfd; }
+  .header-logo { color:#0f9d58; font-size:40px !important; margin-right:8px; margin-top:-4px; }
+  .header-title-wrapper { display:flex; flex-direction:column; }
+  .title-row { display:flex; align-items:center; gap:12px; margin-bottom:2px; }
+  .header-title { font-size:18px; color:#202124; margin:0; font-weight:normal; cursor:text; padding:2px 6px; border-radius:4px; outline:none; }
+  .header-title:hover { box-shadow: inset 0 0 0 1px #c4c7c5; }
+  .title-icons { display:flex; gap:8px; color:#444746; }
+  .title-icons span { font-size:18px; cursor:pointer; }
+  .save-status { font-size:12px; color:#5f6368; margin-left:4px; }
+  .header-right { margin-left:auto; display:flex; align-items:center; gap:14px; color:#444746; padding-top:4px; }
+  .header-right .material-icons-outlined { font-size:22px; cursor:pointer; }
+  .share-btn { display:flex; align-items:center; gap:6px; background:#c2e7ff; color:#001d35; border:none; border-radius:18px; padding:8px 18px; font-size:14px; cursor:pointer; }
+  .share-btn .material-icons { font-size:18px; }
+  .avatar { width:32px; height:32px; border-radius:50%; background:#7b5cc4; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; }
+
+  .header-menus { display:flex; gap:2px; font-size:14px; color:#202124; margin-left:-4px; }
+  .menu-item { position:relative; cursor:pointer; padding:4px 8px; border-radius:4px; user-select:none; }
+  .menu-item:hover { background:#e9eef6; }
+  .menu-item.open { background:#d3e3fd; }
+  .dropdown { display:none; position:absolute; top:100%; left:0; background:#fff; box-shadow:0 2px 6px 2px rgba(60,64,67,.15),0 1px 2px rgba(60,64,67,.3);
+              border-radius:4px; padding:6px 0; z-index:100; min-width:240px; color:#202124; font-size:13px; font-weight:normal; cursor:default; }
+  .open > .dropdown { display:block; }
+  .dropdown .item { padding:7px 16px 7px 12px; display:flex; align-items:center; gap:12px; cursor:pointer; white-space:nowrap; }
+  .dropdown .item:hover { background:#f1f3f4; }
+  .dropdown .item.checked { background:#e8f0fe; }
+  .dropdown .item .mi { font-size:18px; color:#444746; width:20px; }
+  .dropdown .item .check { font-size:18px; width:20px; visibility:hidden; color:#444746; }
+  .dropdown .item.checked .check { visibility:visible; }
+  .dropdown hr { border:none; border-top:1px solid #e0e0e0; margin:6px 0; }
+  .shortcut { color:#5f6368; font-size:12px; margin-left:auto; padding-left:24px; }
+  .toolbar { display:flex; align-items:center; padding:4px 12px; background:#edf2fa; border-radius:24px; margin:0 16px 8px; gap:2px; }
+  .toolbar-group { display:flex; align-items:center; padding-right:6px; margin-right:6px; border-right:1px solid #c7c7c7; gap:1px; }
+  .toolbar-group:last-child { border-right:none; }
+  .icon-btn { display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:4px; cursor:pointer; color:#444746; position:relative; user-select:none; }
+  .icon-btn .material-icons, .icon-btn .material-icons-outlined { font-size:20px; }
+  .icon-btn:hover { background:#dde3ea; }
+  .icon-btn.on { background:#d3e3fd; color:#041e49; }
+  .icon-btn.disabled { opacity:.38; }
+  .color-bar { position:absolute; left:5px; right:5px; bottom:3px; height:4px; border-radius:1px; }
+  .icon-btn.with-bar .material-icons { margin-top:-5px; font-size:18px; }
+  .toolbar-select { display:flex; align-items:center; padding:0 6px; height:28px; border-radius:4px; cursor:pointer; color:#444746; font-size:13px; position:relative; user-select:none; }
+  .toolbar-select:hover { background:#dde3ea; }
+  .toolbar-select.open, .icon-btn.open { background:#d3e3fd; }
+  .toolbar-select .arrow { font-size:18px; margin-left:2px; }
+  .hidden-picker { position:absolute; opacity:0; width:1px; height:1px; left:0; bottom:0; pointer-events:none; border:0; padding:0; }
+  .palette { padding:10px 12px !important; min-width:0 !important; }
+  .swatch-grid { display:grid; grid-template-columns:repeat(10, 18px); gap:4px; }
+  .swatch-grid.first { margin-bottom:8px; }
+  .swatch { width:18px; height:18px; border-radius:50%; cursor:pointer; box-sizing:border-box; border:1px solid rgba(0,0,0,.08); position:relative; }
+  .swatch:hover { box-shadow:0 0 0 2px #fff, 0 0 0 3px #9aa0a6; }
+  .swatch.sel::after { content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:bold; color:#fff; text-shadow:0 0 2px #000; }
+  .palette-label { font-size:11px; color:#5f6368; margin:10px 0 6px; letter-spacing:.3px; }
+  .custom-row { display:flex; align-items:center; gap:6px; }
+  .custom-add { width:20px; height:20px; border-radius:50%; border:1px solid #c4c7c5; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#444746; }
+  .custom-add .material-icons { font-size:16px; }
+  .border-grid { display:grid; grid-template-columns:repeat(5, 28px); gap:2px; padding:2px 8px; }
+  .bitem { width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:4px; cursor:pointer; color:#444746; }
+  .bitem .material-icons { font-size:20px; }
+  .bitem:hover { background:#f1f3f4; }
+  .bitem.checked { background:#e8f0fe; }
+  .line-preview { display:block; width:110px; background:#202124; border-radius:2px; }
+  .formula-bar { display:flex; align-items:center; padding:3px 16px; background:#fff; border-top:1px solid #e0e0e0; border-bottom:1px solid #e0e0e0; }
+  .name-box { width:72px; border:none; outline:none; font-size:13px; color:#202124; padding:3px 4px; }
+  .name-arrow { font-size:18px !important; color:#444746; }
+  .fb-sep { width:1px; height:20px; background:#e0e0e0; margin:0 10px; }
+  .fx-icon { font-style:italic; font-family:'Times New Roman', serif; color:#5f6368; margin-right:12px; font-size:18px; }
+  .formula-input { flex-grow:1; border:none; outline:none; font-size:13px; color:#000; font-family:Arial, sans-serif; }
+  .spreadsheet-container { flex-grow:1; overflow:auto; position:relative; background:#fff; }
+  .sheet-wrapper { position:relative; width:max-content; height:max-content; }
+  table { border-collapse:collapse; table-layout:fixed; user-select:none; -webkit-user-select:none; }
+  th, td { border:1px solid #e2e3e3; box-sizing:border-box; font-size:13px; color:#000; }
+  th { background:#f8f9fa; color:#444746; font-weight:normal; position:sticky; z-index:2; font-size:11px; }
+  th.hl { background:#d3e3fd; color:#041e49; font-weight:bold; }
+  .corner-header { width:46px; height:24px; top:0; left:0; z-index:3; border-bottom:2px solid #c0c0c0; border-right:2px solid #c0c0c0; }
+  .col-header { width:100px; height:24px; top:0; border-bottom:2px solid #c0c0c0; }
+  .row-header { width:46px; left:0; text-align:center; border-right:2px solid #c0c0c0; }
+  td { width:100px; height:21px; cursor:cell; padding:0 4px; overflow:hidden; white-space:nowrap; font-family:Arial, sans-serif; }
+  td.fake-selected { background-color:#e8f0fe !important; }
+  td.active-cell { outline:2px solid #1a73e8; outline-offset:-2px; background-color:#fff !important; }
+  td.editing { outline:2px solid #1a73e8; outline-offset:-2px; cursor:text; user-select:text; -webkit-user-select:text; overflow:visible; position:relative; z-index:1; background:#fff !important; box-shadow:0 2px 6px rgba(0,0,0,.25); }
+
+  #sheet.no-grid:not(.boss) td { border-color:transparent; }
+  #sheet.boss td { background-color:transparent !important; }
+  #sheet.boss td.boss-head { background-color:#f3f3f3 !important; font-weight:bold; }
+  #sheet.boss td.boss-title { font-weight:bold; font-size:15px; overflow:visible; }
+  #sheet.boss td.boss-bold { font-weight:bold; }
+  #sheet.boss td.boss-ov { overflow:visible; color:#5f6368; font-size:12px; }
+  #sheet.boss td.boss-num { text-align:right; }
+  #sheet.boss td.fake-selected { background-color:#e8f0fe !important; }
+  #sheet.boss td.active-cell { background-color:#fff !important; }
+  #drawCanvas, #previewCanvas { position:absolute; top:24px; left:46px; z-index:1; pointer-events:none; }
+  #drawCanvas.on { pointer-events:auto; touch-action:none; }
+  #cursorRing { position:absolute; z-index:1; pointer-events:none; border-radius:50%; border:1px solid rgba(0,0,0,.65); box-shadow:0 0 0 1px rgba(255,255,255,.8); display:none; box-sizing:border-box; }
+  .bottom-bar { display:flex; align-items:center; height:38px; background:#f9fbfd; border-top:1px solid #e0e0e0; padding:0 12px; gap:4px; font-size:13px; color:#444746; user-select:none; }
+  .sheet-btn { width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:50%; cursor:pointer; }
+  .sheet-btn:hover { background:#e9eef6; }
+  .sheet-tab { display:flex; align-items:center; gap:2px; padding:0 8px 0 14px; height:30px; border-radius:4px; cursor:pointer; }
+  .sheet-tab.active { background:#e1e9f7; color:#0b57d0; font-weight:bold; }
+  .sheet-tab .material-icons { font-size:18px; }
+  .bottom-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+  .explore { width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:50%; cursor:pointer; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.2); color:#188038; }
+
+  .kb-backdrop { display:none; position:fixed; inset:0; background:rgba(32,33,36,.45); z-index:500; align-items:center; justify-content:center; }
+  .kb-backdrop.show { display:flex; }
+  .kb-dialog { background:#fff; border-radius:8px; width:560px; max-width:calc(100vw - 32px); max-height:80vh; display:flex; flex-direction:column; box-shadow:0 4px 8px 3px rgba(60,64,67,.15),0 1px 3px rgba(60,64,67,.3); font-size:13px; color:#202124; }
+  .kb-head { display:flex; align-items:center; padding:18px 20px 10px; }
+  .kb-head h2 { margin:0; font-size:20px; font-weight:normal; flex:1; }
+  .kb-close { cursor:pointer; color:#444746; border-radius:50%; padding:4px; }
+  .kb-close:hover { background:#f1f3f4; }
+  .kb-search { margin:0 20px 8px; border:1px solid #dadce0; border-radius:4px; padding:7px 10px; color:#80868b; font-size:13px; }
+  .kb-body { overflow:auto; padding:0 20px 18px; }
+  .kb-sec { font-size:14px; font-weight:bold; color:#1a73e8; margin:14px 0 6px; }
+  .kb-row { display:flex; justify-content:space-between; gap:16px; padding:6px 0; border-bottom:1px solid #f1f3f4; }
+  .kb-row span:first-child { color:#3c4043; }
+  .kb-key { color:#5f6368; white-space:nowrap; text-align:right; }
+  @media print { .header, .toolbar, .formula-bar, .bottom-bar { display:none; } body { height:auto; overflow:visible; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="material-icons header-logo">description</span>
+  <div class="header-title-wrapper">
+    <div class="title-row">
+      <h1 class="header-title" contenteditable="true" spellcheck="false" id="docTitle">제목 없는 스프레드시트</h1>
+      <div class="title-icons">
+        <span class="material-icons-outlined" title="별표">star_border</span>
+        <span class="material-icons-outlined" title="이동">drive_file_move</span>
+        <span class="material-icons-outlined" id="cloudIcon" title="문서 상태 보기">cloud_queue</span>
+      </div>
+      <span class="save-status" id="saveStatus"></span>
+    </div>
+    <div class="header-menus" id="menus">
+      <div class="menu-item">파일
+        <div class="dropdown">
+          <div class="item" data-action="new"><span class="material-icons-outlined mi">note_add</span>새로 만들기</div>
+          <div class="item" data-action="open"><span class="material-icons-outlined mi">folder_open</span>열기<span class="shortcut">Ctrl+O</span></div>
+          <div class="item"><span class="material-icons-outlined mi">file_upload</span>가져오기</div>
+          <div class="item"><span class="material-icons-outlined mi">file_copy</span>사본 만들기</div>
+          <hr>
+          <div class="item"><span class="material-icons-outlined mi">person_add</span>공유</div>
+          <div class="item"><span class="material-icons-outlined mi">mail</span>이메일</div>
+          <div class="item" data-action="download"><span class="material-icons-outlined mi">file_download</span>다운로드 (PNG 이미지)</div>
+          <hr>
+          <div class="item" data-action="print"><span class="material-icons-outlined mi">print</span>인쇄<span class="shortcut">Ctrl+P</span></div>
+        </div>
+      </div>
+      <div class="menu-item">수정
+        <div class="dropdown">
+          <div class="item" data-action="undo"><span class="material-icons mi">undo</span>실행취소<span class="shortcut">Ctrl+Z</span></div>
+          <div class="item" data-action="redo"><span class="material-icons mi">redo</span>재실행<span class="shortcut">Ctrl+Y</span></div>
+          <hr>
+          <div class="item"><span class="material-icons-outlined mi">content_cut</span>잘라내기<span class="shortcut">Ctrl+X</span></div>
+          <div class="item"><span class="material-icons-outlined mi">content_copy</span>복사<span class="shortcut">Ctrl+C</span></div>
+          <div class="item"><span class="material-icons-outlined mi">content_paste</span>붙여넣기<span class="shortcut">Ctrl+V</span></div>
+          <hr>
+          <div class="item" data-action="clear"><span class="material-icons-outlined mi">delete</span>값 삭제</div>
+          <div class="item"><span class="material-icons-outlined mi">find_replace</span>찾기 및 바꾸기<span class="shortcut">Ctrl+H</span></div>
+        </div>
+      </div>
+      <div class="menu-item">보기
+        <div class="dropdown">
+          <div class="item checked" data-action="grid" id="gridItem"><span class="material-icons check">check</span>격자선 표시</div>
+          <div class="item"><span class="material-icons check">check</span>수식 입력줄 표시</div>
+          <hr>
+          <div class="item"><span class="material-icons-outlined mi">view_column</span>고정</div>
+          <div class="item"><span class="material-icons-outlined mi">zoom_in</span>확대/축소</div>
+          <div class="item" data-action="fullscreen"><span class="material-icons-outlined mi">fullscreen</span>전체 화면</div>
+        </div>
+      </div>
+      <div class="menu-item">삽입
+        <div class="dropdown">
+          <div class="item"><span class="material-icons-outlined mi">table_rows</span>행</div>
+          <div class="item"><span class="material-icons-outlined mi">view_week</span>열</div>
+          <hr>
+          <div class="item"><span class="material-icons-outlined mi">insert_chart</span>차트</div>
+          <div class="item"><span class="material-icons-outlined mi">pivot_table_chart</span>피봇 테이블</div>
+          <div class="item" data-action="open"><span class="material-icons-outlined mi">image</span>이미지</div>
+          <div class="item"><span class="material-icons-outlined mi">gesture</span>그림</div>
+          <hr>
+          <div class="item"><span class="material-icons-outlined mi">functions</span>함수</div>
+          <div class="item"><span class="material-icons-outlined mi">link</span>링크<span class="shortcut">Ctrl+K</span></div>
+        </div>
+      </div>
+      <div class="menu-item">서식
+        <div class="dropdown">
+          <div class="item"><span class="material-icons-outlined mi">palette</span>테마</div>
+          <hr>
+          <div class="item"><span class="material-icons-outlined mi">123</span>숫자</div>
+          <div class="item"><span class="material-icons-outlined mi">format_bold</span>텍스트</div>
+          <div class="item"><span class="material-icons-outlined mi">format_align_left</span>정렬</div>
+          <hr>
+          <div class="item"><span class="material-icons-outlined mi">format_paint</span>조건부 서식</div>
+          <div class="item" data-action="clear"><span class="material-icons-outlined mi">format_clear</span>서식 지우기<span class="shortcut">Ctrl+\</span></div>
+        </div>
+      </div>
+      <div class="menu-item">데이터
+        <div class="dropdown">
+          <div class="item"><span class="material-icons-outlined mi">sort</span>시트 정렬</div>
+          <div class="item"><span class="material-icons-outlined mi">filter_alt</span>필터 만들기</div>
+          <div class="item"><span class="material-icons-outlined mi">rule</span>데이터 확인</div>
+        </div>
+      </div>
+      <div class="menu-item">도구
+        <div class="dropdown">
+          <div class="item"><span class="material-icons-outlined mi">spellcheck</span>맞춤법</div>
+          <div class="item"><span class="material-icons-outlined mi">notifications</span>알림 규칙</div>
+        </div>
+      </div>
+      <div class="menu-item">확장 프로그램
+        <div class="dropdown">
+          <div class="item"><span class="material-icons-outlined mi">extension</span>부가기능</div>
+          <div class="item"><span class="material-icons-outlined mi">code</span>Apps Script</div>
+        </div>
+      </div>
+      <div class="menu-item">도움말
+        <div class="dropdown">
+          <div class="item"><span class="material-icons-outlined mi">help_outline</span>Sheets 도움말</div>
+          <div class="item" data-action="shortcuts"><span class="material-icons-outlined mi">keyboard</span>단축키<span class="shortcut">Ctrl+/</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="material-icons-outlined" title="최근 수정 기록">history</span>
+    <span class="material-icons-outlined" title="댓글">comment</span>
+    <span class="material-icons-outlined" title="회의">videocam</span>
+    <button class="share-btn"><span class="material-icons">lock</span>공유</button>
+    <div class="avatar">희</div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="toolbar-group">
+    <div class="icon-btn" title="메뉴 검색"><span class="material-icons">search</span></div>
+    <div class="icon-btn disabled" id="undoBtn" data-action="undo" title="실행취소 (Ctrl+Z)"><span class="material-icons">undo</span></div>
+    <div class="icon-btn disabled" id="redoBtn" data-action="redo" title="재실행 (Ctrl+Y)"><span class="material-icons">redo</span></div>
+    <div class="icon-btn" data-action="print" title="인쇄 (Ctrl+P)"><span class="material-icons">print</span></div>
+        <div class="icon-btn" id="eraserBtn" data-tool="eraser" title="서식 복사"><span class="material-icons-outlined">format_paint</span></div>
+  </div>
+  <div class="toolbar-group">
+    <div class="toolbar-select" id="zoomSelect" title="확대/축소"><span id="zoomLabel">100%</span><span class="material-icons arrow">arrow_drop_down</span>
+      <div class="dropdown" style="min-width:110px">
+        <div class="item" data-zoom="0.5">50%</div><div class="item" data-zoom="0.75">75%</div>
+        <div class="item" data-zoom="0.9">90%</div><div class="item" data-zoom="1">100%</div>
+        <div class="item" data-zoom="1.25">125%</div><div class="item" data-zoom="1.5">150%</div><div class="item" data-zoom="2">200%</div>
+      </div>
+    </div>
+  </div>
+  <div class="toolbar-group">
+    <div class="icon-btn" title="통화 형식"><span class="material-icons" style="font-size:16px;font-weight:bold;">₩</span></div>
+    <div class="icon-btn" title="백분율 형식"><span class="material-icons" style="font-size:18px;">percent</span></div>
+    <div class="icon-btn" title="소수점 이하 자리수 감소"><span class="material-icons-outlined" style="font-size:18px">.0</span></div>
+    <div class="icon-btn" title="소수점 이하 자리수 증가"><span class="material-icons-outlined" style="font-size:18px">.00</span></div>
+    <div class="toolbar-select" title="추가 형식">123<span class="material-icons arrow">arrow_drop_down</span></div>
+  </div>
+  <div class="toolbar-group">
+    <div class="toolbar-select" style="width:64px;justify-content:space-between" title="글꼴">기본값...<span class="material-icons arrow">arrow_drop_down</span></div>
+  </div>
+  <div class="toolbar-group">
+    <div class="icon-btn" title="글꼴 크기 줄이기"><span class="material-icons-outlined" style="font-size:16px;">remove</span></div>
+    <div class="toolbar-select" style="border:1px solid #747775;height:22px;padding:0 8px" title="글꼴 크기">10</div>
+    <div class="icon-btn" title="글꼴 크기 늘리기"><span class="material-icons-outlined" style="font-size:16px;">add</span></div>
+  </div>
+  <div class="toolbar-group">
+    <div class="icon-btn" title="굵게 (Ctrl+B)"><span class="material-icons">format_bold</span></div>
+    <div class="icon-btn" title="기울임꼴 (Ctrl+I)"><span class="material-icons">format_italic</span></div>
+    <div class="icon-btn" title="취소선"><span class="material-icons">strikethrough_s</span></div>
+        <div class="icon-btn with-bar" id="colorBtn" title="텍스트 색상">
+      <span class="material-icons">format_color_text</span><span class="color-bar" id="colorBar"></span>
+      <input type="color" id="customColor" class="hidden-picker" value="#1a73e8">
+      <div class="dropdown palette" id="palette"></div>
+    </div>
+  </div>
+  <div class="toolbar-group">
+        <div class="icon-btn with-bar" id="bucketBtn" data-tool="bucket" title="채우기 색상">
+      <span class="material-icons-outlined">format_color_fill</span><span class="color-bar" id="fillBar"></span>
+    </div>
+        <div class="icon-btn" id="toolBtn" title="테두리"><span class="material-icons">border_all</span>
+      <div class="dropdown" id="toolMenu" style="min-width:0">
+        <div class="border-grid">
+          <div class="bitem tool-item" data-tool="pen" title="모든 테두리"><span class="material-icons">border_all</span></div>
+          <div class="bitem tool-item" data-tool="highlighter" title="안쪽 테두리"><span class="material-icons">border_inner</span></div>
+          <div class="bitem tool-item" data-tool="line" title="가로 테두리"><span class="material-icons">border_horizontal</span></div>
+          <div class="bitem tool-item" data-tool="arrow" title="세로 테두리"><span class="material-icons">border_vertical</span></div>
+          <div class="bitem tool-item" data-tool="rect" title="바깥쪽 테두리"><span class="material-icons">border_outer</span></div>
+          <div class="bitem tool-item" data-tool="ellipse" title="왼쪽 테두리"><span class="material-icons">border_left</span></div>
+          <div class="bitem tool-item" data-tool="bucket" title="위쪽 테두리"><span class="material-icons">border_top</span></div>
+          <div class="bitem tool-item" data-tool="cell" title="오른쪽 테두리"><span class="material-icons">border_right</span></div>
+          <div class="bitem tool-item" data-tool="eraser" title="아래쪽 테두리"><span class="material-icons">border_bottom</span></div>
+          <div class="bitem" data-action="clear" title="테두리 지우기"><span class="material-icons">border_clear</span></div>
+        </div>
+      </div>
+    </div>
+        <div class="toolbar-select" id="sizeBtn" title="테두리 스타일"><span class="material-icons" style="font-size:20px">line_weight</span>
+      <div class="dropdown" id="sizeMenu" style="min-width:150px"></div>
+    </div>
+    <div class="icon-btn" title="셀 병합"><span class="material-icons-outlined">call_merge</span></div>
+  </div>
+  <div class="toolbar-group">
+    <div class="icon-btn" title="가로 맞춤"><span class="material-icons">format_align_left</span></div>
+    <div class="icon-btn" title="세로 맞춤"><span class="material-icons">vertical_align_bottom</span></div>
+    <div class="icon-btn" title="텍스트 줄바꿈"><span class="material-icons">wrap_text</span></div>
+    <div class="icon-btn" title="텍스트 회전"><span class="material-icons">text_rotation_angleup</span></div>
+  </div>
+  <div class="toolbar-group">
+    <div class="icon-btn" title="링크 삽입"><span class="material-icons">link</span></div>
+    <div class="icon-btn" title="댓글 삽입"><span class="material-icons-outlined">add_comment</span></div>
+    <div class="icon-btn" title="차트 삽입"><span class="material-icons-outlined">insert_chart</span></div>
+    <div class="icon-btn" title="필터 만들기"><span class="material-icons-outlined">filter_alt</span></div>
+        <div class="icon-btn" data-action="clear" title="서식 지우기"><span class="material-icons-outlined">format_clear</span></div>
+    <div class="icon-btn" title="함수"><span class="material-icons">functions</span></div>
+  </div>
+</div>
+
+<div class="formula-bar">
+  <input class="name-box" id="nameBox" value="A1" readonly>
+  <span class="material-icons name-arrow">arrow_drop_down</span>
+  <div class="fb-sep"></div>
+  <span class="fx-icon">fx</span>
+  <input type="text" class="formula-input" id="formulaInput" value="" readonly>
+</div>
+
+<div class="spreadsheet-container" id="container">
+  <div class="sheet-wrapper" id="sheetWrapper">
+    <table id="sheet"></table>
+    <canvas id="drawCanvas"></canvas>
+    <canvas id="previewCanvas"></canvas>
+    <div id="cursorRing"></div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="sheet-btn" title="시트 추가"><span class="material-icons">add</span></div>
+  <div class="sheet-btn" title="모든 시트"><span class="material-icons">menu</span></div>
+  <div class="sheet-tab active">시트1 <span class="material-icons">arrow_drop_down</span></div>
+  <div class="bottom-right">
+    <span id="statusText"></span>
+    <div class="explore" title="탐색"><span class="material-icons-outlined">auto_awesome</span></div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" style="display:none">
+
+<div class="kb-backdrop" id="kbModal">
+  <div class="kb-dialog">
+    <div class="kb-head"><h2>키보드 단축키</h2><span class="material-icons kb-close" data-action="shortcuts">close</span></div>
+    <div class="kb-search">단축키 검색</div>
+    <div class="kb-body">
+      <div class="kb-sec">시작 / 숨기기</div>
+      <div class="kb-row"><span>그리기 켜기·끄기 (구름 아이콘 ✓ = 켜짐)</span><span class="kb-key">쿵야 / znddi</span></div>
+      <div class="kb-row"><span>보스 모드 (가짜 보고서) · 다시 누르면 복귀</span><span class="kb-key">Esc</span></div>
+      <div class="kb-row"><span>이 창 열기·닫기</span><span class="kb-key">Ctrl+/</span></div>
+      <div class="kb-sec">도구</div>
+      <div class="kb-row"><span>펜 · 형광펜 · 지우개</span><span class="kb-key">P · H · E</span></div>
+      <div class="kb-row"><span>직선 · 화살표 · 사각형 · 원</span><span class="kb-key">L · A · R · O</span></div>
+      <div class="kb-row"><span>페인트통 · 셀 칠하기</span><span class="kb-key">B · G</span></div>
+      <div class="kb-row"><span>굵기 줄이기 · 늘리기</span><span class="kb-key">[ · ]</span></div>
+      <div class="kb-sec">테두리 메뉴 ▦ 아이콘</div>
+      <div class="kb-row"><span>윗줄</span><span class="kb-key">펜 · 형광펜 · 직선 · 화살표 · 사각형</span></div>
+      <div class="kb-row"><span>아랫줄</span><span class="kb-key">원 · 페인트통 · 셀 칠하기 · 지우개 · 전체 지우기</span></div>
+      <div class="kb-sec">툴바 버튼</div>
+      <div class="kb-row"><span>텍스트 색상</span><span class="kb-key">펜 색</span></div>
+      <div class="kb-row"><span>테두리 스타일</span><span class="kb-key">굵기</span></div>
+      <div class="kb-row"><span>서식 복사 (롤러)</span><span class="kb-key">지우개</span></div>
+      <div class="kb-row"><span>채우기 색상</span><span class="kb-key">페인트통</span></div>
+      <div class="kb-row"><span>서식 지우기</span><span class="kb-key">전체 지우기</span></div>
+      <div class="kb-sec">기타</div>
+      <div class="kb-row"><span>실행취소 · 재실행</span><span class="kb-key">Ctrl+Z · Ctrl+Y</span></div>
+      <div class="kb-row"><span>지우개로 바로 지우기</span><span class="kb-key">우클릭 드래그</span></div>
+      <div class="kb-row"><span>정사각형 · 정원 · 45° 선</span><span class="kb-key">Shift + 도형</span></div>
+      <div class="kb-row"><span>PNG 저장 · 이미지 불러오기</span><span class="kb-key">파일 > 다운로드 · 열기</span></div>
+      <div class="kb-row"><span>흰 도화지처럼 쓰기</span><span class="kb-key">보기 > 격자선 표시 끄기</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const numRows = 70, numCols = 30, colWidth = 100, rowHeight = 21;
+const W = numCols * colWidth, H = numRows * rowHeight;
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+const HL_ALPHA = 0.35;
+const SIZES = [1, 2, 4, 8, 16, 32];
+const TOOL_KEYS = { KeyP:'pen', KeyH:'highlighter', KeyE:'eraser', KeyL:'line', KeyA:'arrow', KeyR:'rect', KeyO:'ellipse', KeyB:'bucket', KeyG:'cell' };
+const SHAPES = ['line', 'arrow', 'rect', 'ellipse'];
+
+const $ = id => document.getElementById(id);
+const sheet = $('sheet'), wrapper = $('sheetWrapper'), container = $('container');
+const canvas = $('drawCanvas'), preview = $('previewCanvas'), ring = $('cursorRing');
+const formulaInput = $('formulaInput'), nameBox = $('nameBox');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
+const pctx = preview.getContext('2d');
+const snap = document.createElement('canvas');
+const sctx = snap.getContext('2d', { willReadFrequently: true });
+
+let isCheatActivated = false, bossMode = false, wasCheat = false;
+let tool = 'pen', color = '#1a73e8', size = 4, zoom = 1;
+let isFakeSelecting = false, startCell = { r: 1, c: 0 }, lastSelectedCoord = 'A1';
+let drawPixels = 0, isEasterEggShowing = false, currentFormula = '';
+let drawing = null;
+
+const fakeFormulas = [
+  '=VLOOKUP(N33, Sheet2!A1:B50, 2, FALSE)', '=IFERROR(INDEX(Data!C:C, MATCH(A2, Data!A:A, 0)), "")',
+  '=SUMIFS(Sales!D:D, Sales!A:A, ">="&DATE(2026,1,1))', '=COUNTIFS(Status, "완료", Assignee, "김대리")',
+  '=QUERY(Raw!A:H, "select B, sum(F) where C = \'3분기\' group by B", 1)', '=ARRAYFORMULA(IF(B2:B="", , C2:C*D2:D))',
+  '=XLOOKUP(E5, 거래처!A:A, 거래처!D:D, "미등록")', '=ROUND(AVERAGEIF(G:G, ">0"), 1)'
+];
+
+const PALETTE_TOP = ['#000000','#434343','#666666','#999999','#b7b7b7','#cccccc','#d9d9d9','#efefef','#f3f3f3','#ffffff',
+                     '#980000','#ff0000','#ff9900','#ffff00','#00ff00','#00ffff','#4a86e8','#0000ff','#9900ff','#ff00ff'];
+const PALETTE_REST = ['#e6b8af','#f4cccc','#fce5cd','#fff2cc','#d9ead3','#d0e0e3','#c9daf8','#cfe2f3','#d9d2e9','#ead1dc',
+                      '#dd7e6b','#ea9999','#f9cb9c','#ffe599','#b6d7a8','#a2c4c9','#a4c2f4','#9fc5e8','#b4a7d6','#d5a6bd',
+                      '#cc4125','#e06666','#f6b26b','#ffd966','#93c47d','#76a5af','#6d9eeb','#6fa8dc','#8e7cc3','#c27ba0',
+                      '#a61c00','#cc0000','#e69138','#f1c232','#6aa84f','#45818e','#3c78d8','#3d85c6','#674ea7','#a64d79',
+                      '#85200c','#990000','#b45f06','#bf9000','#38761d','#134f5c','#1155cc','#0b5394','#351c75','#741b47',
+                      '#5b0f00','#660000','#783f04','#7f6000','#274e13','#0c343d','#1c4587','#073763','#20124d','#4c1130'];
+let customColors = [];
+function closeAllMenus() { document.querySelectorAll('.open').forEach(el => el.classList.remove('open')); }
+document.querySelectorAll('.menu-item, .toolbar-select, #colorBtn, #toolBtn').forEach(el => {
+  el.addEventListener('click', e => {
+    if (!el.querySelector('.dropdown') || e.target.closest('.dropdown')) return;
+    e.stopPropagation();
+    const wasOpen = el.classList.contains('open');
+    closeAllMenus();
+    if (!wasOpen) el.classList.add('open');
+  });
+});
+document.querySelectorAll('.menu-item').forEach(el => el.addEventListener('mouseenter', () => {
+  if (document.querySelector('.menu-item.open') && !el.classList.contains('open')) { closeAllMenus(); el.classList.add('open'); }
+}));
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-action],[data-tool],[data-size],[data-zoom],[data-color],[data-custom]');
+  if (t) {
+    if (t.dataset.action) runAction(t.dataset.action);
+    if (t.dataset.tool) setTool(t.dataset.tool);
+    if (t.dataset.size) setSize(+t.dataset.size);
+    if (t.dataset.zoom) setZoom(+t.dataset.zoom);
+    if (t.dataset.color) setColor(t.dataset.color);
+    if (t.dataset.custom) { $('customColor').click(); }
+  }
+  if (e.target.id === 'kbModal') $('kbModal').classList.remove('show');
+  if (!e.target.closest('.dropdown') || t) closeAllMenus();
+});
+
+function runAction(a) {
+  switch (a) {
+    case 'undo': undo(); break;
+    case 'redo': redo(); break;
+    case 'print': window.print(); break;
+    case 'new': case 'clear': clearAll(); break;
+    case 'open': $('fileInput').click(); break;
+    case 'download': downloadPNG(); break;
+    case 'grid': sheet.classList.toggle('no-grid'); $('gridItem').classList.toggle('checked', !sheet.classList.contains('no-grid')); break;
+    case 'shortcuts': $('kbModal').classList.toggle('show'); break;
+    case 'fullscreen': document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); break;
+  }
+}
+function buildPalette() {
+  const sw = c => `<div class="swatch${c.toLowerCase() === color.toLowerCase() ? ' sel' : ''}" data-color="${c}" style="background:${c}" title="${c}"></div>`;
+  $('palette').innerHTML =
+    `<div class="swatch-grid first">${PALETTE_TOP.map(sw).join('')}</div>` +
+    `<div class="swatch-grid">${PALETTE_REST.map(sw).join('')}</div>` +
+    `<div class="palette-label">맞춤</div>` +
+    `<div class="custom-row"><div class="custom-add" data-custom="1" title="맞춤 색상 추가"><span class="material-icons">add</span></div>${customColors.map(sw).join('')}</div>`;
+}
+function buildSizeMenu() {
+  $('sizeMenu').innerHTML = SIZES.map(s =>
+    `<div class="item${s === size ? ' checked' : ''}" data-size="${s}"><span class="material-icons check">check</span>` +
+    `<span class="line-preview" style="height:${Math.min(s, 16)}px"></span></div>`).join('');
+}
+function setColor(c) {
+  color = c;
+  $('colorBar').style.background = c; $('fillBar').style.background = c;
+  $('customColor').value = c;
+  buildPalette(); updateRing();
+}
+$('customColor').addEventListener('input', e => setColor(e.target.value));
+$('customColor').addEventListener('change', e => {
+  const c = e.target.value;
+  if (!PALETTE_TOP.concat(PALETTE_REST, customColors).includes(c)) { customColors = [c, ...customColors].slice(0, 9); buildPalette(); }
+});
+function setSize(s) { size = s; buildSizeMenu(); updateRing(); }
+function stepSize(dir) {
+  let i = SIZES.indexOf(size); if (i < 0) i = 2;
+  setSize(SIZES[Math.max(0, Math.min(SIZES.length - 1, i + dir))]);
+}
+function setTool(t) {
+  tool = t;
+  document.querySelectorAll('.tool-item').forEach(el => el.classList.toggle('checked', el.dataset.tool === t));
+  $('eraserBtn').classList.toggle('on', isCheatActivated && t === 'eraser');
+  $('bucketBtn').classList.toggle('on', isCheatActivated && t === 'bucket');
+  canvas.style.cursor = ['pen', 'highlighter', 'eraser'].includes(t) ? 'none' : (t === 'cell' ? 'cell' : 'crosshair');
+  updateRing();
+}
+function setZoom(z) { zoom = z; wrapper.style.zoom = z; $('zoomLabel').textContent = Math.round(z * 100) + '%'; }
+let saveTimer = null;
+function setSaveStatus(text) { $('saveStatus').textContent = text; }
+function flashSaved() {
+  setSaveStatus('저장 중...');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => setSaveStatus(isCheatActivated ? '드라이브에 저장됨' : '모든 변경사항이 저장됨'), 700);
+}
+let codeBuffer = '';
+function setCheat(on) {
+  isCheatActivated = on;
+  canvas.classList.toggle('on', on);
+  $('cloudIcon').textContent = on ? 'cloud_done' : 'cloud_queue';
+  if (on) { clearFakeSelection(); }
+  else { ring.style.display = 'none'; currentFormula = ''; showSelectionInfo(); }
+  setTool(tool);
+  flashSaved();
+}
+document.addEventListener('keydown', e => {
+  const editing = e.target.isContentEditable || e.target.tagName === 'INPUT';
+  if (editing) { if (e.key === 'Escape') e.target.blur(); return; }
+
+  if (e.key === 'Escape' && $('kbModal').classList.contains('show')) { $('kbModal').classList.remove('show'); return; }
+  if (e.key === 'Escape') { e.preventDefault(); closeAllMenus(); toggleBoss(); return; }
+
+  const mod = e.ctrlKey || e.metaKey, k = e.code;
+  if (mod && k === 'KeyZ') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if (mod && k === 'KeyY') { e.preventDefault(); redo(); return; }
+  if (mod && k === 'KeyS') { e.preventDefault(); flashSaved(); return; }
+  if (mod && k === 'Slash') { e.preventDefault(); runAction('shortcuts'); return; }
+  if (mod && k === 'KeyO') { e.preventDefault(); $('fileInput').click(); return; }
+  if (mod || e.altKey) return;
+
+  if (/^Key[A-Z]$/.test(k)) {
+    codeBuffer = (codeBuffer + k[3].toLowerCase()).slice(-10);
+    if (codeBuffer.endsWith('znddi') && !bossMode) { codeBuffer = ''; setCheat(!isCheatActivated); return; }
+  }
+  if (!isCheatActivated) {
+    if (k === 'F2') { e.preventDefault(); const td = cellEl(startCell.r, startCell.c); if (td) startEdit(td); }
+    return;
+  }
+  if (TOOL_KEYS[k]) { setTool(TOOL_KEYS[k]); return; }
+  if (k === 'BracketLeft') stepSize(-1);
+  if (k === 'BracketRight') stepSize(1);
+});
+const colLetter = i => { let s = '', t = i; while (t >= 0) { s = String.fromCharCode(65 + (t % 26)) + s; t = Math.floor(t / 26) - 1; } return s; };
+const cellEl = (r, c) => sheet.rows[r] && sheet.rows[r].cells[c + 1];
+
+function createSpreadsheet() {
+  let html = '<tr><th class="corner-header"></th>';
+  for (let c = 0; c < numCols; c++) html += `<th class="col-header">${colLetter(c)}</th>`;
+  html += '</tr>';
+  for (let r = 1; r <= numRows; r++) {
+    html += `<tr><th class="row-header">${r}</th>`;
+    for (let c = 0; c < numCols; c++) html += `<td data-row="${r}" data-col="${c}"></td>`;
+    html += '</tr>';
+  }
+  sheet.innerHTML = html;
+  sheet.style.width = (46 + W) + 'px';
+}
+
+sheet.addEventListener('mousedown', e => {
+  const td = e.target.closest('td');
+  if (!td || isCheatActivated || td.isContentEditable) return;
+  isFakeSelecting = true;
+  startCell = { r: +td.dataset.row, c: +td.dataset.col };
+  drawSelectionRange(startCell, startCell);
+});
+sheet.addEventListener('mouseover', e => {
+  if (!isFakeSelecting || isCheatActivated) return;
+  const td = e.target.closest('td');
+  if (td) drawSelectionRange(startCell, { r: +td.dataset.row, c: +td.dataset.col });
+});
+window.addEventListener('mouseup', () => { isFakeSelecting = false; });
+sheet.addEventListener('dblclick', e => {
+  const td = e.target.closest('td');
+  if (td && !isCheatActivated && !bossMode) startEdit(td);
+});
+
+function drawSelectionRange(start, end) {
+  clearFakeSelection();
+  const r1 = Math.min(start.r, end.r), r2 = Math.max(start.r, end.r);
+  const c1 = Math.min(start.c, end.c), c2 = Math.max(start.c, end.c);
+  lastSelectedCoord = (r1 === r2 && c1 === c2) ? `${colLetter(c1)}${r1}` : `${colLetter(c1)}${r1}:${colLetter(c2)}${r2}`;
+  for (let r = r1; r <= r2; r++) {
+    sheet.rows[r].cells[0].classList.add('hl');
+    for (let c = c1; c <= c2; c++) { const cell = cellEl(r, c); if (cell && (r1 !== r2 || c1 !== c2)) cell.classList.add('fake-selected'); }
+  }
+  for (let c = c1; c <= c2; c++) sheet.rows[0].cells[c + 1].classList.add('hl');
+  const ac = cellEl(start.r, start.c); if (ac) ac.classList.add('active-cell');
+  showSelectionInfo();
+}
+function clearFakeSelection() {
+  sheet.querySelectorAll('.fake-selected, .active-cell, .hl').forEach(el => el.classList.remove('fake-selected', 'active-cell', 'hl'));
+}
+function showSelectionInfo() {
+  if (isEasterEggShowing) return;
+  nameBox.value = lastSelectedCoord.split(':')[0];
+  const td = cellEl(startCell.r, startCell.c);
+  formulaInput.value = td ? (td.dataset.f || td.textContent) : '';
+}
+
+function startEdit(td) {
+  td.contentEditable = 'true'; td.classList.add('editing'); td.focus();
+  const range = document.createRange(); range.selectNodeContents(td); range.collapse(false);
+  const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+}
+sheet.addEventListener('focusout', e => {
+  const td = e.target;
+  if (td.tagName !== 'TD') return;
+  td.contentEditable = 'false'; td.classList.remove('editing');
+  if (+td.dataset.row === startCell.r && +td.dataset.col === startCell.c) showSelectionInfo();
+});
+sheet.addEventListener('keydown', e => {
+  const td = e.target;
+  if (td.tagName === 'TD' && td.isContentEditable && e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault(); td.blur();
+    const r = Math.min(numRows, +td.dataset.row + 1), c = +td.dataset.col;
+    startCell = { r, c }; drawSelectionRange(startCell, startCell);
+  }
+});
+function initCanvas() {
+  const first = cellEl(1, 0);
+  [canvas, preview].forEach(c => {
+    c.width = W * DPR; c.height = H * DPR;
+    c.style.width = W + 'px'; c.style.height = H + 'px';
+    c.style.left = first.offsetLeft + 'px'; c.style.top = first.offsetTop + 'px';
+  });
+  snap.width = canvas.width; snap.height = canvas.height;
+  [ctx, pctx].forEach(c => { c.setTransform(DPR, 0, 0, DPR, 0, 0); c.lineCap = 'round'; c.lineJoin = 'round'; });
+}
+const pos = e => { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height }; };
+const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+const strokeWidth = t => t === 'eraser' ? Math.max(size * 2.5, 10) : t === 'highlighter' ? Math.max(size * 3, 14) : size;
+function clearPreview() { pctx.save(); pctx.setTransform(1, 0, 0, 1, 0, 0); pctx.clearRect(0, 0, preview.width, preview.height); pctx.restore(); }
+function updateRing(p) {
+  const show = isCheatActivated && ['pen', 'highlighter', 'eraser'].includes(tool);
+  if (!show) { ring.style.display = 'none'; return; }
+  const d = Math.max(strokeWidth(tool), 4);
+  ring.style.width = ring.style.height = d + 'px';
+  ring.style.background = tool === 'eraser' ? 'rgba(255,255,255,.5)' : (tool === 'highlighter' ? hexA(color, HL_ALPHA) : 'transparent');
+  if (p) {
+    ring.style.left = (canvas.offsetLeft + p.x - d / 2) + 'px';
+    ring.style.top = (canvas.offsetTop + p.y - d / 2) + 'px';
+    ring.style.display = 'block';
+  }
+}
+function hexA(hex, a) { const { r, g, b } = hexToRgb(hex); return `rgba(${r},${g},${b},${a})`; }
+function hexToRgb(hex) { const n = parseInt(hex.slice(1), 16); return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }; }
+const undoStack = [], redoStack = [];
+let histBytes = 0; const MAX_BYTES = 400 * 1024 * 1024;
+function captureDev(x, y, w, h) {
+  if (w <= 0 || h <= 0) return null;
+  const before = sctx.getImageData(x, y, w, h), after = ctx.getImageData(x, y, w, h);
+  sctx.putImageData(after, x, y);
+  return { x, y, w, h, before, after };
+}
+function captureCss(minX, minY, maxX, maxY, pad) {
+  const x = Math.max(0, Math.floor((minX - pad) * DPR)), y = Math.max(0, Math.floor((minY - pad) * DPR));
+  const x2 = Math.min(canvas.width, Math.ceil((maxX + pad) * DPR)), y2 = Math.min(canvas.height, Math.ceil((maxY + pad) * DPR));
+  return captureDev(x, y, x2 - x, y2 - y);
+}
+const actBytes = a => a.canvas ? (a.canvas.before ? a.canvas.before.data.length : 0) + (a.canvas.after ? a.canvas.after.data.length : 0) : 0;
+function pushAction(a) {
+  if (!a.canvas && !(a.cells && a.cells.length)) return;
+  a.bytes = actBytes(a);
+  redoStack.forEach(r => histBytes -= r.bytes); redoStack.length = 0;
+  undoStack.push(a); histBytes += a.bytes;
+  while ((histBytes > MAX_BYTES || undoStack.length > 100) && undoStack.length > 1) histBytes -= undoStack.shift().bytes;
+  updateUndoButtons(); flashSaved();
+}
+function applyCanvas(c, which) {
+  const img = c[which];
+  if (img) { ctx.putImageData(img, c.x, c.y); sctx.putImageData(img, c.x, c.y); }
+  else { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(c.x, c.y, c.w, c.h); ctx.restore(); sctx.clearRect(c.x, c.y, c.w, c.h); }
+}
+function undo() {
+  if (bossMode || drawing) return;
+  const a = undoStack.pop(); if (!a) return;
+  if (a.canvas) applyCanvas(a.canvas, 'before');
+  if (a.cells) a.cells.forEach(ch => setCellColor(ch.td, ch.before));
+  redoStack.push(a); updateUndoButtons(); flashSaved();
+}
+function redo() {
+  if (bossMode || drawing) return;
+  const a = redoStack.pop(); if (!a) return;
+  if (a.canvas) applyCanvas(a.canvas, 'after');
+  if (a.cells) a.cells.forEach(ch => setCellColor(ch.td, ch.after));
+  undoStack.push(a); updateUndoButtons(); flashSaved();
+}
+function updateUndoButtons() {
+  $('undoBtn').classList.toggle('disabled', !undoStack.length);
+  $('redoBtn').classList.toggle('disabled', !redoStack.length);
+}
+function setCellColor(td, c) {
+  if (c) { td.style.backgroundColor = c; td.dataset.paint = c; }
+  else { td.style.backgroundColor = ''; delete td.dataset.paint; }
+}
+const cellAt = ev => document.elementsFromPoint(ev.clientX, ev.clientY).find(el => el.tagName === 'TD');
+function paintCell(ev, c) {
+  const td = cellAt(ev); if (!td) return;
+  const prev = td.dataset.paint || '';
+  if (prev === c) return;
+  const rec = drawing.cells.get(td);
+  if (rec) rec.after = c; else drawing.cells.set(td, { td, before: prev, after: c });
+  setCellColor(td, c);
+}
+function setStroke(t) {
+  ctx.globalCompositeOperation = t === 'eraser' ? 'destination-out' : 'source-over';
+  ctx.strokeStyle = ctx.fillStyle = color;
+  ctx.lineWidth = strokeWidth(t);
+}
+function drawSegment(pts) {
+  const n = pts.length; if (n < 2) return;
+  const a = pts[n - 2], b = pts[n - 1], m = mid(a, b);
+  ctx.beginPath();
+  if (n === 2) { ctx.moveTo(a.x, a.y); ctx.lineTo(m.x, m.y); }
+  else { const s = mid(pts[n - 3], a); ctx.moveTo(s.x, s.y); ctx.quadraticCurveTo(a.x, a.y, m.x, m.y); }
+  ctx.stroke();
+}
+function tracePath(c, pts) {
+  c.beginPath(); c.moveTo(pts[0].x, pts[0].y);
+  if (pts.length === 1) { c.lineTo(pts[0].x + 0.01, pts[0].y); return; }
+  for (let i = 1; i < pts.length - 1; i++) { const m = mid(pts[i], pts[i + 1]); c.quadraticCurveTo(pts[i].x, pts[i].y, m.x, m.y); }
+  const l = pts[pts.length - 1]; c.lineTo(l.x, l.y);
+}
+function renderHighlighter() {
+  clearPreview();
+  pctx.globalCompositeOperation = 'source-over'; pctx.globalAlpha = 1;
+  pctx.strokeStyle = color; pctx.lineWidth = strokeWidth('highlighter');
+  tracePath(pctx, drawing.pts); pctx.stroke();
+}
+function drawShape(c, t, s, e, shift) {
+  let x1 = s.x, y1 = s.y, x2 = e.x, y2 = e.y;
+  const dx = x2 - x1, dy = y2 - y1;
+  if (shift) {
+    if (t === 'line' || t === 'arrow') {
+      const step = Math.PI / 4, ang = Math.round(Math.atan2(dy, dx) / step) * step, len = Math.hypot(dx, dy);
+      x2 = x1 + Math.cos(ang) * len; y2 = y1 + Math.sin(ang) * len;
+    } else { const m = Math.max(Math.abs(dx), Math.abs(dy)); x2 = x1 + (dx < 0 ? -m : m); y2 = y1 + (dy < 0 ? -m : m); }
+  }
+  let head = 0;
+  c.save();
+  c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
+  c.strokeStyle = color; c.lineWidth = size; c.lineCap = 'round'; c.lineJoin = 'round';
+  c.beginPath();
+  if (t === 'line') { c.moveTo(x1, y1); c.lineTo(x2, y2); }
+  else if (t === 'arrow') {
+    c.moveTo(x1, y1); c.lineTo(x2, y2);
+    const a = Math.atan2(y2 - y1, x2 - x1); head = Math.max(12, size * 3.5);
+    c.moveTo(x2, y2); c.lineTo(x2 - head * Math.cos(a - 0.45), y2 - head * Math.sin(a - 0.45));
+    c.moveTo(x2, y2); c.lineTo(x2 - head * Math.cos(a + 0.45), y2 - head * Math.sin(a + 0.45));
+  }
+  else if (t === 'rect') c.rect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
+  else if (t === 'ellipse') c.ellipse((x1 + x2) / 2, (y1 + y2) / 2, Math.abs(x2 - x1) / 2, Math.abs(y2 - y1) / 2, 0, 0, Math.PI * 2);
+  c.stroke(); c.restore();
+  return { minX: Math.min(x1, x2), minY: Math.min(y1, y2), maxX: Math.max(x1, x2), maxY: Math.max(y1, y2), pad: size / 2 + head + 2 };
+}
+function extend(d, p) { d.minX = Math.min(d.minX, p.x); d.minY = Math.min(d.minY, p.y); d.maxX = Math.max(d.maxX, p.x); d.maxY = Math.max(d.maxY, p.y); }
+
+function showFakeFormula(p) {
+  currentFormula = fakeFormulas[Math.floor(Math.random() * fakeFormulas.length)];
+  if (isEasterEggShowing) return;
+  const c = Math.min(numCols - 1, Math.max(0, Math.floor(p.x / colWidth)));
+  const r = Math.min(numRows, Math.max(1, Math.floor(p.y / rowHeight) + 1));
+  nameBox.value = colLetter(c) + r; formulaInput.value = currentFormula;
+}
+
+canvas.addEventListener('pointerdown', e => {
+  if (!isCheatActivated || bossMode || drawing) return;
+  if (e.button !== 0 && e.button !== 2) return;
+  e.preventDefault(); closeAllMenus();
+  canvas.setPointerCapture(e.pointerId);
+  const p = pos(e), t = e.button === 2 ? 'eraser' : tool;
+  drawing = { tool: t, pts: [p], start: p, last: p, minX: p.x, minY: p.y, maxX: p.x, maxY: p.y, cells: new Map(), moved: false };
+  showFakeFormula(p);
+  preview.style.opacity = t === 'highlighter' ? HL_ALPHA : 1;
+
+  if (t === 'pen' || t === 'eraser') {
+    setStroke(t);
+    ctx.beginPath(); ctx.arc(p.x, p.y, ctx.lineWidth / 2, 0, Math.PI * 2); ctx.fill();
+    if (t === 'eraser') paintCell(e, '');
+  } else if (t === 'highlighter') renderHighlighter();
+  else if (t === 'cell') paintCell(e, color);
+  else if (t === 'bucket') { drawing = null; bucketFill(p); }
+});
+
+canvas.addEventListener('pointermove', e => {
+  if (!isCheatActivated) return;
+  const p = pos(e); updateRing(p);
+  if (!drawing) return;
+  const d = drawing;
+  const evs = (e.getCoalescedEvents && e.getCoalescedEvents().length) ? e.getCoalescedEvents() : [e];
+  for (const ev of evs) {
+    const q = pos(ev);
+    if (d.tool === 'pen' || d.tool === 'eraser' || d.tool === 'highlighter') {
+      const l = d.pts[d.pts.length - 1];
+      if (Math.hypot(q.x - l.x, q.y - l.y) < 0.8) continue;
+      d.pts.push(q); extend(d, q);
+      if (d.tool !== 'highlighter') drawSegment(d.pts);
+      if (d.tool === 'eraser') paintCell(ev, '');
+      drawPixels++; checkEasterEgg(drawPixels);
+    } else if (d.tool === 'cell') paintCell(ev, color);
+    else { d.last = q; d.moved = true; }
+  }
+  if (d.tool === 'highlighter') renderHighlighter();
+  if (SHAPES.includes(d.tool)) { clearPreview(); drawShape(pctx, d.tool, d.start, d.last, e.shiftKey); }
+});
+
+function finishDrawing(e) {
+  if (!drawing) return;
+  const d = drawing; drawing = null;
+  const act = {};
+  if (d.tool === 'pen' || d.tool === 'eraser') {
+    const n = d.pts.length;
+    if (n >= 2) { const m = mid(d.pts[n - 2], d.pts[n - 1]); ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(d.pts[n - 1].x, d.pts[n - 1].y); ctx.stroke(); }
+    ctx.globalCompositeOperation = 'source-over';
+    act.canvas = captureCss(d.minX, d.minY, d.maxX, d.maxY, strokeWidth(d.tool) / 2 + 2);
+  } else if (d.tool === 'highlighter') {
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = HL_ALPHA; ctx.globalCompositeOperation = 'source-over';
+    ctx.drawImage(preview, 0, 0); ctx.restore();
+    clearPreview();
+    act.canvas = captureCss(d.minX, d.minY, d.maxX, d.maxY, strokeWidth('highlighter') / 2 + 2);
+  } else if (SHAPES.includes(d.tool)) {
+    clearPreview();
+    if (d.moved) { const b = drawShape(ctx, d.tool, d.start, d.last, e && e.shiftKey); act.canvas = captureCss(b.minX, b.minY, b.maxX, b.maxY, b.pad); }
+  }
+  if (d.cells.size) act.cells = [...d.cells.values()];
+  pushAction(act);
+}
+canvas.addEventListener('pointerup', finishDrawing);
+canvas.addEventListener('pointercancel', finishDrawing);
+canvas.addEventListener('pointerleave', () => { if (!drawing) ring.style.display = 'none'; });
+canvas.addEventListener('contextmenu', e => { if (isCheatActivated) e.preventDefault(); });
+window.addEventListener('blur', () => finishDrawing());
+function bucketFill(p) {
+  const w = canvas.width, h = canvas.height;
+  const x0 = Math.floor(p.x * DPR), y0 = Math.floor(p.y * DPR);
+  if (x0 < 0 || y0 < 0 || x0 >= w || y0 >= h) return;
+  const img = ctx.getImageData(0, 0, w, h), d32 = new Uint32Array(img.data.buffer);
+  const target = d32[y0 * w + x0];
+  const { r, g, b } = hexToRgb(color);
+  const fill = ((255 << 24) | (b << 16) | (g << 8) | r) >>> 0;
+  if (target === fill) return;
+  const tr = target & 255, tg = (target >> 8) & 255, tb = (target >> 16) & 255, ta = target >>> 24;
+  const TOL = 48;
+  const match = v => {
+    const a = v >>> 24;
+    if (ta === 0) return a <= 110;
+    return Math.abs((v & 255) - tr) <= TOL && Math.abs(((v >> 8) & 255) - tg) <= TOL && Math.abs(((v >> 16) & 255) - tb) <= TOL && Math.abs(a - ta) <= TOL;
+  };
+  const seen = new Uint8Array(w * h), stack = [x0, y0];
+  let minX = x0, maxX = x0, minY = y0, maxY = y0;
+  while (stack.length) {
+    const cy = stack.pop(); let cx = stack.pop(); let i = cy * w + cx;
+    while (cx >= 0 && !seen[i] && match(d32[i])) { cx--; i--; }
+    cx++; i++;
+    let up = false, down = false;
+    if (cx < minX) minX = cx;
+    while (cx < w && !seen[i] && match(d32[i])) {
+      d32[i] = fill; seen[i] = 1;
+      if (cy > 0) { const j = i - w; if (!seen[j] && match(d32[j])) { if (!up) { stack.push(cx, cy - 1); up = true; } } else up = false; }
+      if (cy < h - 1) { const j = i + w; if (!seen[j] && match(d32[j])) { if (!down) { stack.push(cx, cy + 1); down = true; } } else down = false; }
+      cx++; i++;
+    }
+    if (cx - 1 > maxX) maxX = cx - 1;
+    if (cy < minY) minY = cy; if (cy > maxY) maxY = cy;
+  }
+  const bw = maxX - minX + 1, bh = maxY - minY + 1;
+  ctx.putImageData(img, 0, 0, minX, minY, bw, bh);
+  pushAction({ canvas: captureDev(minX, minY, bw, bh) });
+}
+function clearAll() {
+  if (bossMode) return;
+  const act = {};
+  const before = sctx.getImageData(0, 0, canvas.width, canvas.height);
+  if (before.data.some(v => v !== 0)) {
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.restore();
+    sctx.clearRect(0, 0, snap.width, snap.height);
+    act.canvas = { x: 0, y: 0, w: canvas.width, h: canvas.height, before, after: null };
+  }
+  act.cells = [...sheet.querySelectorAll('td[data-paint]')].map(td => ({ td, before: td.dataset.paint, after: '' }));
+  act.cells.forEach(ch => setCellColor(ch.td, ''));
+  drawPixels = 0;
+  pushAction(act);
+}
+
+$('fileInput').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  const img = new Image();
+  img.onload = () => {
+    const s = Math.min(1, 900 / img.width, 600 / img.height);
+    const w = img.width * s, h = img.height * s;
+    const r = canvas.getBoundingClientRect(), cr = container.getBoundingClientRect();
+    const x = Math.max(0, (cr.left - r.left) * W / r.width) + 30, y = Math.max(0, (cr.top - r.top) * H / r.height) + 30;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.drawImage(img, x, y, w, h);
+    pushAction({ canvas: captureCss(x, y, x + w, y + h, 1) });
+    URL.revokeObjectURL(img.src);
+  };
+  img.src = URL.createObjectURL(f);
+  e.target.value = '';
+});
+
+function downloadPNG() {
+  const out = document.createElement('canvas'); out.width = canvas.width; out.height = canvas.height;
+  const o = out.getContext('2d');
+  o.fillStyle = '#fff'; o.fillRect(0, 0, out.width, out.height);
+  const r = canvas.getBoundingClientRect(), sx = canvas.width / r.width;
+  sheet.querySelectorAll('td[data-paint]').forEach(td => {
+    const b = td.getBoundingClientRect();
+    o.fillStyle = td.dataset.paint;
+    o.fillRect((b.left - r.left) * sx, (b.top - r.top) * sx, b.width * sx, b.height * sx);
+  });
+  o.drawImage(canvas, 0, 0);
+  const a = document.createElement('a');
+  a.download = ($('docTitle').textContent.trim() || '스프레드시트') + '.png';
+  a.href = out.toDataURL('image/png'); a.click();
+}
+const BOSS_ROWS = [
+  ['서울', '김민수', 41200, 43850, 46100, 125000], ['경기', '이서연', 38900, 40120, 42760, 118000],
+  ['인천', '박지훈', 21450, 19870, 23310, 66000], ['부산', '최유진', 27600, 28940, 26180, 84000],
+  ['대구', '정하늘', 18230, 19560, 20410, 60000], ['광주', '강도윤', 14870, 15320, 16940, 45000],
+  ['대전', '윤서아', 15990, 17240, 16580, 50000], ['제주', '임준호', 8420, 9150, 10230, 27000]
+];
+let bossBackup = [];
+function bossSet(r, c, text, cls = [], f) {
+  const td = cellEl(r, c); if (!td) return;
+  bossBackup.push({ td, text: td.textContent });
+  td.textContent = text; td.classList.add(...cls);
+  if (f) td.dataset.f = f;
+}
+function toggleBoss() {
+  if (drawing) finishDrawing();
+  bossMode = !bossMode;
+  if (bossMode) {
+    wasCheat = isCheatActivated;
+    if (isCheatActivated) setCheat(false);
+    canvas.style.visibility = preview.style.visibility = 'hidden';
+    sheet.classList.add('boss');
+    const fmt = n => n.toLocaleString('ko-KR');
+    bossSet(2, 1, '2026년 3분기 지역별 영업 실적 (단위: 천원)', ['boss-title']);
+    ['지역', '담당자', '7월', '8월', '9월', '3분기 합계', '목표', '달성률'].forEach((h, i) => bossSet(4, i + 1, h, ['boss-head']));
+    const tot = [0, 0, 0, 0, 0];
+    BOSS_ROWS.forEach((row, k) => {
+      const r = 5 + k, sum = row[2] + row[3] + row[4];
+      bossSet(r, 1, row[0]); bossSet(r, 2, row[1]);
+      [row[2], row[3], row[4]].forEach((v, i) => { bossSet(r, 3 + i, fmt(v), ['boss-num']); tot[i] += v; });
+      bossSet(r, 6, fmt(sum), ['boss-num'], `=SUM(D${r}:F${r})`); tot[3] += sum;
+      bossSet(r, 7, fmt(row[5]), ['boss-num']); tot[4] += row[5];
+      bossSet(r, 8, (sum / row[5] * 100).toFixed(1) + '%', ['boss-num'], `=G${r}/H${r}`);
+    });
+    const tr = 5 + BOSS_ROWS.length;
+    bossSet(tr, 1, '합계', ['boss-head']); bossSet(tr, 2, '', ['boss-head']);
+    ['D', 'E', 'F', 'G', 'H'].forEach((L, i) => bossSet(tr, 3 + i, fmt(tot[i]), ['boss-head', 'boss-num'], `=SUM(${L}5:${L}${tr - 1})`));
+    bossSet(tr, 8, (tot[3] / tot[4] * 100).toFixed(1) + '%', ['boss-head', 'boss-num'], `=G${tr}/H${tr}`);
+    bossSet(tr + 2, 1, '※ 9월 실적은 9/30 마감 기준 잠정치이며, 확정치는 10/7 반영 예정', ['boss-ov']);
+    startCell = { r: 7, c: 6 }; drawSelectionRange(startCell, startCell);
+    container.scrollTo(0, 0);
+    $('statusText').textContent = '합계: ' + fmt(BOSS_ROWS[2][2] + BOSS_ROWS[2][3] + BOSS_ROWS[2][4]);
+  } else {
+    bossBackup.reverse().forEach(b => { b.td.textContent = b.text; b.td.classList.remove('boss-head', 'boss-title', 'boss-num', 'boss-bold', 'boss-ov'); delete b.td.dataset.f; });
+    bossBackup = [];
+    sheet.classList.remove('boss');
+    canvas.style.visibility = preview.style.visibility = '';
+    $('statusText').textContent = '';
+    showSelectionInfo();
+    if (wasCheat) setCheat(true);
+  }
+}
+function showEasterEgg(message, duration = 3000) {
+  isEasterEggShowing = true;
+  formulaInput.style.color = '#d93025'; formulaInput.style.fontWeight = 'bold'; formulaInput.value = message;
+  setTimeout(() => {
+    isEasterEggShowing = false; formulaInput.style.color = '#000'; formulaInput.style.fontWeight = 'normal';
+    if (isCheatActivated) formulaInput.value = currentFormula; else showSelectionInfo();
+  }, duration);
+}
+function checkEasterEgg(n) {
+  if (isEasterEggShowing) return;
+  if (n === 200) showEasterEgg('(소곤소곤) 상사 떴는지 잘 봐요! 👀');
+  else if (n === 800) showEasterEgg('보고서 쓰는 척 타자도 한 번씩 쳐주세요! ⌨️');
+  else if (n === 1500) showEasterEgg('당신의 월급이 성공적으로 루팡되고 있습니다... 💸');
+  else if (n === 3000) showEasterEgg('이 정도면 거의 화가... 🎨 퇴근 시간 확인하세요');
+}
+createSpreadsheet();
+initCanvas();
+buildSizeMenu();
+setColor(color);
+setTool('pen');
+drawSelectionRange(startCell, startCell);
+setSaveStatus('모든 변경사항이 저장됨');
+</script>
+</body>
+</html>

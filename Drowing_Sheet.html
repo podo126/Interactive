@@ -2,12 +2,12 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>제목 없는 스프레드시트 - Google Sheets</title>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style>
-  body { margin:0; font-family: Arial, sans-serif; display:flex; flex-direction:column; height:100vh; background:#f8f9fa; overflow:hidden; }
+  body { margin:0; font-family: Arial, sans-serif; display:flex; flex-direction:column; height:100vh; height:100dvh; background:#f8f9fa; overflow:hidden; touch-action:manipulation; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; }
   .header { display:flex; align-items:flex-start; padding:10px 16px 4px; background:#f9fbfd; }
   .header-logo { color:#0f9d58; font-size:40px !important; margin-right:8px; margin-top:-4px; }
   .header-title-wrapper { display:flex; flex-direction:column; }
@@ -123,6 +123,47 @@
   .kb-row { display:flex; justify-content:space-between; gap:16px; padding:6px 0; border-bottom:1px solid #f1f3f4; }
   .kb-row span:first-child { color:#3c4043; }
   .kb-key { color:#5f6368; white-space:nowrap; text-align:right; }
+  .material-icons, .material-icons-outlined { display:inline-block; width:1em; overflow:hidden; white-space:nowrap; flex:none; }
+  .dropdown { max-height:70vh; overflow-y:auto; }
+  .header-menus, .toolbar { scrollbar-width:none; }
+  .header-menus::-webkit-scrollbar, .toolbar::-webkit-scrollbar { display:none; }
+
+  @media (max-width: 768px) {
+    .header { padding:6px 10px 2px; padding-top:max(6px, env(safe-area-inset-top)); }
+    .header-logo { font-size:30px !important; margin-top:2px; margin-right:6px; cursor:pointer; }
+    .header-title-wrapper { flex:1; min-width:0; }
+    .title-row { gap:6px; }
+    .header-title { font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:42vw; padding:2px 4px; }
+    .title-icons span:not(#cloudIcon), .save-status { display:none; }
+    .title-icons span { font-size:20px; padding:2px; }
+    .header-menus { overflow-x:auto; flex-wrap:nowrap; }
+    .menu-item { flex:none; padding:6px 8px; }
+    .header-right { gap:8px; padding-top:0; margin-left:6px; }
+    .header-right .material-icons-outlined, .share-label { display:none; }
+    .share-btn { padding:7px 9px; }
+    .avatar { width:28px; height:28px; font-size:13px; }
+    .toolbar { margin:0 8px 6px; padding:3px 6px; overflow-x:auto; flex-wrap:nowrap; }
+    .toolbar > * { flex:none; }
+    .toolbar-group { padding-right:4px; margin-right:4px; }
+    .icon-btn { width:36px; height:36px; }
+    .toolbar-select { height:36px; }
+    .dropdown .item { padding:11px 18px 11px 12px; font-size:14px; }
+    .border-grid { grid-template-columns:repeat(5, 40px); gap:4px; }
+    .bitem { width:40px; height:40px; }
+    .swatch-grid { grid-template-columns:repeat(10, 24px); gap:5px; }
+    .swatch { width:24px; height:24px; }
+    .formula-bar { padding:3px 8px; }
+    .name-box { width:44px; }
+    .fb-sep { margin:0 6px; }
+    .fx-icon { margin-right:8px; }
+    .bottom-bar { height:44px; padding-bottom:env(safe-area-inset-bottom); }
+    .bottom-right #statusText { display:none; }
+    .kb-dialog { width:100%; max-height:86vh; max-height:86dvh; }
+    .kb-head { padding:14px 16px 8px; }
+    .kb-search { margin:0 16px 6px; }
+    .kb-body { padding:0 16px 14px; }
+    .kb-row { font-size:12.5px; }
+  }
   @media print { .header, .toolbar, .formula-bar, .bottom-bar { display:none; } body { height:auto; overflow:visible; } }
 </style>
 </head>
@@ -235,8 +276,8 @@
     <span class="material-icons-outlined" title="최근 수정 기록">history</span>
     <span class="material-icons-outlined" title="댓글">comment</span>
     <span class="material-icons-outlined" title="회의">videocam</span>
-    <button class="share-btn"><span class="material-icons">lock</span>공유</button>
-    <div class="avatar">KY</div>
+    <button class="share-btn"><span class="material-icons">lock</span><span class="share-label">공유</span></button>
+    <div class="avatar">희</div>
   </div>
 </div>
 
@@ -359,7 +400,7 @@
     <div class="kb-body">
       <div class="kb-sec">시작 / 숨기기</div>
       <div class="kb-row"><span>그리기 켜기·끄기 (구름 아이콘 ✓ = 켜짐)</span><span class="kb-key">쿵야 / znddi</span></div>
-      <div class="kb-row"><span>보스 모드 (가짜 보고서) · 다시 누르면 복귀</span><span class="kb-key">Esc</span></div>
+      <div class="kb-row"><span>보스 모드 (가짜 보고서) · 다시 누르면 복귀</span><span class="kb-key">Esc / 로고 클릭</span></div>
       <div class="kb-row"><span>이 창 열기·닫기</span><span class="kb-key">Ctrl+/</span></div>
       <div class="kb-sec">도구</div>
       <div class="kb-row"><span>펜 · 형광펜 · 지우개</span><span class="kb-key">P · H · E</span></div>
@@ -375,6 +416,11 @@
       <div class="kb-row"><span>서식 복사 (롤러)</span><span class="kb-key">지우개</span></div>
       <div class="kb-row"><span>채우기 색상</span><span class="kb-key">페인트통</span></div>
       <div class="kb-row"><span>서식 지우기</span><span class="kb-key">전체 지우기</span></div>
+      <div class="kb-sec">모바일 · 터치</div>
+      <div class="kb-row"><span>그리기 켜기·끄기</span><span class="kb-key">구름 아이콘 3번 탭</span></div>
+      <div class="kb-row"><span>보스 모드 켜기·끄기</span><span class="kb-key">왼쪽 위 로고 탭</span></div>
+      <div class="kb-row"><span>그리는 중 화면 이동</span><span class="kb-key">두 손가락 드래그</span></div>
+      <div class="kb-row"><span>도구 · 색 · 굵기 바꾸기</span><span class="kb-key">툴바 버튼 (위 표 참고)</span></div>
       <div class="kb-sec">기타</div>
       <div class="kb-row"><span>실행취소 · 재실행</span><span class="kb-key">Ctrl+Z · Ctrl+Y</span></div>
       <div class="kb-row"><span>지우개로 바로 지우기</span><span class="kb-key">우클릭 드래그</span></div>
@@ -425,6 +471,16 @@ const PALETTE_REST = ['#e6b8af','#f4cccc','#fce5cd','#fff2cc','#d9ead3','#d0e0e3
                       '#85200c','#990000','#b45f06','#bf9000','#38761d','#134f5c','#1155cc','#0b5394','#351c75','#741b47',
                       '#5b0f00','#660000','#783f04','#7f6000','#274e13','#0c343d','#1c4587','#073763','#20124d','#4c1130'];
 let customColors = [];
+function positionDropdown(el) {
+  const dd = el.querySelector(':scope > .dropdown'); if (!dd) return;
+  const r = el.getBoundingClientRect();
+  dd.style.position = 'fixed'; dd.style.left = '0px'; dd.style.top = (r.bottom + 2) + 'px';
+  dd.style.maxHeight = Math.max(160, window.innerHeight - r.bottom - 12) + 'px';
+  const w = dd.offsetWidth;
+  dd.style.left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)) + 'px';
+}
+['resize', 'orientationchange'].forEach(ev => window.addEventListener(ev, () => closeAllMenus()));
+document.querySelectorAll('.toolbar, .header-menus').forEach(el => el.addEventListener('scroll', () => closeAllMenus(), { passive: true }));
 function closeAllMenus() { document.querySelectorAll('.open').forEach(el => el.classList.remove('open')); }
 document.querySelectorAll('.menu-item, .toolbar-select, #colorBtn, #toolBtn').forEach(el => {
   el.addEventListener('click', e => {
@@ -432,11 +488,11 @@ document.querySelectorAll('.menu-item, .toolbar-select, #colorBtn, #toolBtn').fo
     e.stopPropagation();
     const wasOpen = el.classList.contains('open');
     closeAllMenus();
-    if (!wasOpen) el.classList.add('open');
+    if (!wasOpen) { el.classList.add('open'); positionDropdown(el); }
   });
 });
 document.querySelectorAll('.menu-item').forEach(el => el.addEventListener('mouseenter', () => {
-  if (document.querySelector('.menu-item.open') && !el.classList.contains('open')) { closeAllMenus(); el.classList.add('open'); }
+  if (document.querySelector('.menu-item.open') && !el.classList.contains('open')) { closeAllMenus(); el.classList.add('open'); positionDropdown(el); }
 }));
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-action],[data-tool],[data-size],[data-zoom],[data-color],[data-custom]');
@@ -770,8 +826,22 @@ function showFakeFormula(p) {
   nameBox.value = colLetter(c) + r; formulaInput.value = currentFormula;
 }
 
+const touches = new Map(); let pan = null;
+const touchMid = () => { const v = [...touches.values()]; return { x: (v[0].x + v[1].x) / 2, y: (v[0].y + v[1].y) / 2 }; };
+function cancelStroke() {
+  if (!drawing) return;
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+  ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(snap, 0, 0); ctx.restore();
+  clearPreview();
+  drawing.cells.forEach(ch => setCellColor(ch.td, ch.before));
+  drawing = null;
+}
 canvas.addEventListener('pointerdown', e => {
-  if (!isCheatActivated || bossMode || drawing) return;
+  if (e.pointerType === 'touch') {
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touches.size >= 2) { e.preventDefault(); cancelStroke(); pan = touchMid(); ring.style.display = 'none'; return; }
+  }
+  if (!isCheatActivated || bossMode || drawing || pan) return;
   if (e.button !== 0 && e.button !== 2) return;
   e.preventDefault(); closeAllMenus();
   canvas.setPointerCapture(e.pointerId);
@@ -786,12 +856,17 @@ canvas.addEventListener('pointerdown', e => {
     if (t === 'eraser') paintCell(e, '');
   } else if (t === 'highlighter') renderHighlighter();
   else if (t === 'cell') paintCell(e, color);
-  else if (t === 'bucket') { drawing = null; bucketFill(p); }
+
 });
 
 canvas.addEventListener('pointermove', e => {
+  if (e.pointerType === 'touch' && touches.has(e.pointerId)) {
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pan && touches.size >= 2) { const m = touchMid(); container.scrollBy(pan.x - m.x, pan.y - m.y); pan = m; return; }
+  }
   if (!isCheatActivated) return;
-  const p = pos(e); updateRing(p);
+  const p = pos(e);
+  if (e.pointerType === 'touch') ring.style.display = 'none'; else updateRing(p);
   if (!drawing) return;
   const d = drawing;
   const evs = (e.getCoalescedEvents && e.getCoalescedEvents().length) ? e.getCoalescedEvents() : [e];
@@ -815,6 +890,7 @@ function finishDrawing(e) {
   if (!drawing) return;
   const d = drawing; drawing = null;
   const act = {};
+  if (d.tool === 'bucket') { bucketFill(d.start); return; }
   if (d.tool === 'pen' || d.tool === 'eraser') {
     const n = d.pts.length;
     if (n >= 2) { const m = mid(d.pts[n - 2], d.pts[n - 1]); ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(d.pts[n - 1].x, d.pts[n - 1].y); ctx.stroke(); }
@@ -832,8 +908,12 @@ function finishDrawing(e) {
   if (d.cells.size) act.cells = [...d.cells.values()];
   pushAction(act);
 }
-canvas.addEventListener('pointerup', finishDrawing);
-canvas.addEventListener('pointercancel', finishDrawing);
+function pointerEnd(e) {
+  if (e.pointerType === 'touch') { touches.delete(e.pointerId); if (touches.size < 2 && pan) { pan = null; return; } if (pan) return; }
+  if (e.type === 'pointercancel') cancelStroke(); else finishDrawing(e);
+}
+canvas.addEventListener('pointerup', pointerEnd);
+canvas.addEventListener('pointercancel', pointerEnd);
 canvas.addEventListener('pointerleave', () => { if (!drawing) ring.style.display = 'none'; });
 canvas.addEventListener('contextmenu', e => { if (isCheatActivated) e.preventDefault(); });
 window.addEventListener('blur', () => finishDrawing());
@@ -934,6 +1014,14 @@ function bossSet(r, c, text, cls = [], f) {
   td.textContent = text; td.classList.add(...cls);
   if (f) td.dataset.f = f;
 }
+document.querySelector('.header-logo').addEventListener('click', () => { closeAllMenus(); toggleBoss(); });
+let cloudTaps = [];
+$('cloudIcon').addEventListener('click', e => {
+  e.stopPropagation();
+  const now = Date.now();
+  cloudTaps = cloudTaps.filter(t => now - t < 900); cloudTaps.push(now);
+  if (cloudTaps.length >= 3 && !bossMode) { cloudTaps = []; setCheat(!isCheatActivated); }
+});
 function toggleBoss() {
   if (drawing) finishDrawing();
   bossMode = !bossMode;

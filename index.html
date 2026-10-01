@@ -54,6 +54,12 @@
   .card.wide { grid-column: span 2; }
   .card h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 12px; }
   .card p { font-size: 1.05rem; color: var(--sub); margin-bottom: 16px; }
+  .card, .socials a {
+  transition: transform 0.2s ease-in-out;
+}
+.card:hover, .socials a:hover {
+  transform: scale(1.05);
+}
 
   /* iframe 자리 */
   .embed {

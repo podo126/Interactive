@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KY restaurant2</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Pretendard", -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    color: #111; background: #fff; line-height: 1.6;
+  }
+
+  /* ▼ 맨 위 얇은 녹색 띠 */
+  .topbar { height: 12px; background: #aee4bd; }
+
+  .wrap { width: min(92%, 1200px); margin: 0 auto; padding: 32px 0 80px; }
+  .back {
+    display: inline-block; margin-bottom: 32px;
+    color: #4049b8; font-weight: 600; text-decoration: none;
+  }
+  .back:hover { text-decoration: underline; }
+  h1 { font-size: clamp(2rem, 4.5vw, 3.2rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .desc { font-size: 1.15rem; color: #2a2a2a; margin-bottom: 32px; }
+
+  /* ▼ 콘텐츠 칸 */
+  .embed {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 2px dashed #c4c3dc;
+    border-radius: 8px;
+    display: grid; place-items: center;
+    color: #9a99b8; text-align: center;
+    overflow: hidden;
+  }
+  .embed iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .embed.filled { border: none; }
+
+  @media (max-width: 640px) { .embed { aspect-ratio: 3 / 4; } }
+  a:focus-visible { outline: 3px solid #4049b8; outline-offset: 3px; }
+</style>
+</head>
+<body>
+  <div class="topbar"></div>
+
+  <main class="wrap">
+    <a class="back" id="back" href="#">← 홈으로</a>
+    <h1 id="title"></h1>
+    <p class="desc" id="desc"></p>
+    <div class="embed" id="embed"></div>
+  </main>
+
+<script>
+  /* =========================================================
+     ✏️ 여기만 고치면 됩니다
+     - HOME: "← 홈으로"를 눌렀을 때 갈 주소
+     - file: 넣을 콘텐츠 파일 이름 (비워두면 "준비 중" 표시)
+     ========================================================= */
+  const HOME = "https://podo126.github.io/Interactive.github.io/";
+
+  const PAGES = {
+    "minigame": {
+      title: "미니게임",
+      desc:  "간단하게 즐길 수 있는 다양한 미니게임들로 당신의 시간을 채워보세요.",
+      file:  ""   // 예: "text.html"
+    },
+    "3d-model": {
+      title: "3D 모델",
+      desc:  "현실감 넘치는 3D 모델들을 직접 돌려보고 확대하며 탐험해보세요.",
+      file:  ""
+    },
+    "psych-test": {
+      title: "심리테스트",
+      desc:  "흥미로운 질문들로 당신의 성향과 숨겨진 모습을 알아보세요.",
+      file:  ""
+    },
+    "virtual-tour": {
+      title: "가상 투어",
+      desc:  "세계 곳곳의 명소를 집에서 편안하게 탐험하는 가상 경험을 즐겨보세요.",
+      file:  ""
+    },
+    "story": {
+      title: "대화형 스토리",
+      desc:  "당신의 선택이 이야기를 이끄는 대화형 스토리로 새로운 모험을 떠나보세요.",
+      file:  ""
+    },
+    "ar": {
+      title: "AR 경험",
+      desc:  "증강 현실을 통해 현실 세계와 디지털 콘텐츠가 결합된 새로운 경험을 해보세요.",
+      file:  ""
+    }
+  };
+  /* ========================================================= */
+
+  document.getElementById("back").href = HOME;
+
+  const type = new URLSearchParams(location.search).get("type");
+  const page = PAGES[type];
+  const embed = document.getElementById("embed");
+
+  if (!page) {
+    document.getElementById("title").textContent = "페이지를 찾을 수 없습니다";
+    document.getElementById("desc").textContent = "홈으로 돌아가 카테고리를 다시 선택하세요.";
+    embed.remove();
+  } else {
+    document.title = page.title + " | KY restaurant2";
+    document.getElementById("title").textContent = page.title;
+    document.getElementById("desc").textContent = page.desc;
+
+    if (page.file) {
+      const frame = document.createElement("iframe");
+      frame.src = page.file;
+      frame.title = page.title;
+      frame.allow = "camera; fullscreen; xr-spatial-tracking";
+      embed.appendChild(frame);
+      embed.classList.add("filled");
+    } else {
+      embed.textContent = page.title + " 콘텐츠 준비 중입니다.";
+    }
+  }
+</script>
+</body>
+</html>

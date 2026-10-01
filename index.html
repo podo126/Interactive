@@ -57,7 +57,9 @@
   .card, .socials a {
   transition: transform 0.2s ease-in-out;
 }
-.card:hover, .socials a:hover {
+/* 모바일 터치(:active)와 PC 마우스 오버(:hover) 모두 적용 */
+.card:hover, .socials a:hover,
+.card:active, .socials a:active {
   transform: scale(1.05);
 }
 

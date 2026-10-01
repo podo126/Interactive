@@ -63,6 +63,10 @@
   transform: scale(1.05);
 }
 
+  /* 카드 = 링크 */
+  a.card { color: inherit; text-decoration: none; }
+  a.card:hover { border-color: var(--accent); }
+
   /* iframe 자리 */
   .embed {
     margin-top: auto;
@@ -130,41 +134,41 @@
       <h1>콘텐츠 갤러리</h1>
       <div class="grid">
 
-        <article class="card">
+        <a class="card" href="content.html?type=minigame">
           <h2>미니게임</h2>
           <p>간단하게 즐길 수 있는 다양한 미니게임들로 당신의 시간을 채워보세요.</p>
-          <div class="embed"><content.html?type=미니게임> 콘텐츠 이미지 </div>
-        </article>
+          <div class="embed"> 콘텐츠 이미지 </div>
+        </a>
 
-        <article class="card">
+        <a class="card" href="content.html?type=3d-model">
           <h2>3D 모델</h2>
           <p>현실감 넘치는 3D 모델들을 직접 돌려보고 확대하며 탐험해보세요.</p>
-          <div class="embed"><!-- 3D 모델 iframe 넣기 --> 콘텐츠 이미지 </div>
-        </article>
+          <div class="embed"> 콘텐츠 이미지 </div>
+        </a>
 
-        <article class="card">
+        <a class="card" href="content.html?type=psych-test">
           <h2>심리테스트</h2>
           <p>흥미로운 질문들로 당신의 성향과 숨겨진 모습을 알아보세요.</p>
-          <div class="embed"><!-- 심리테스트 iframe 넣기 --> 콘텐츠 이미지 </div>
-        </article>
+          <div class="embed"> 콘텐츠 이미지 </div>
+        </a>
 
-        <article class="card">
+        <a class="card" href="content.html?type=virtual-tour">
           <h2>가상 투어</h2>
           <p>세계 곳곳의 명소를 집에서 편안하게 탐험하는 가상 경험을 즐겨보세요.</p>
-          <div class="embed"><!-- 가상 투어 iframe 넣기 --> 콘텐츠 이미지 </div>
-        </article>
+          <div class="embed"> 콘텐츠 이미지 </div>
+        </a>
 
-        <article class="card wide">
+        <a class="card wide" href="content.html?type=story">
           <h2>대화형 스토리</h2>
           <p>당신의 선택이 이야기를 이끄는 대화형 스토리로 새로운 모험을 떠나보세요.</p>
-          <div class="embed"><!-- 대화형 스토리 iframe 넣기 --> 콘텐츠 이미지 </div>
-        </article>
+          <div class="embed"> 콘텐츠 이미지 </div>
+        </a>
 
-        <article class="card wide">
+        <a class="card wide" href="content.html?type=ar">
           <h2>AR 경험</h2>
           <p>증강 현실을 통해 현실 세계와 디지털 콘텐츠가 결합된 새로운 경험을 해보세요.</p>
-          <div class="embed"><!-- AR 경험 iframe 넣기 --> 콘텐츠 이미지 </div>
-        </article>
+          <div class="embed"> 콘텐츠 이미지 </div>
+        </a>
 
       </div>
     </div>

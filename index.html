@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#F6FBDB">
+<meta name="theme-color" content="#DCEAFE">
 <title> 타이틀 - 2인 협동 미니게임 </title>
 <script>
 /* 오류 표시기: 스크립트 오류가 나면 화면 아래에 빨간 줄로 표시 (원인 확인용 · 정상일 땐 보이지 않음) */
@@ -25,15 +25,15 @@
    디자인 토큰
    ========================================================= */
 :root{
-  /* 메인 2색: 크림 #F6FBDB (약 80%) · 그린 #3D9E00 (약 20%) — 나머지는 두 색의 명암 변형 */
-  --cream:#F6FBDB; --green:#3D9E00;
-  --bg:var(--cream);                 /* 화면 바탕 */
-  --panel:#ECF4C8;                   /* 카드·칸 (크림을 살짝 진하게) */
-  --line:#B8D88E;                    /* 테두리 (크림+그린) */
-  --text:#24420C;                    /* 본문 글자 (그린을 어둡게) */
-  --muted:#5F7A42;                   /* 보조 글자 */
-  --accent:var(--green);             /* 강조: 버튼·점수·코드 */
-  --on-accent:var(--cream);          /* 그린 위 글자 */
+  /* 사무실(도시) 컨셉 — 낮 하늘의 연파랑 바탕 + 밤 빌딩의 인디고 메인, 창문 노랑은 포인트 */
+  --cream:#F4F8FF; --main:#3528a5; --main-dk:#1f1a6e; --green:var(--main); --point:#F5C542;
+  --bg:#DCEAFE;                      /* 화면 바탕 (낮 하늘을 연하게) */
+  --panel:#E9F1FF;                   /* 카드·칸 */
+  --line:#A9C3F2;                    /* 테두리 (하늘 파랑) */
+  --text:#17135C;                    /* 본문 글자 (밤하늘 남색) */
+  --muted:#55639A;                   /* 보조 글자 (빌딩 그림자 파랑) */
+  --accent:var(--main);              /* 강조: 버튼·점수·코드 */
+  --on-accent:var(--cream);          /* 메인 색 위 글자 */
   --p1:#3D9E00; --p2:#024452; --gold:var(--green);   /* 담당 색: 양파쿵야 / 주먹밥쿵야 */
   --font:'BaekmukGulimChe',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;   /* 전체: 백묵 굴림체 */
   --font-title:var(--font);
@@ -53,7 +53,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 [hidden]{display:none!important}
 .btn{display:block;width:100%;padding:14px 16px;border-radius:14px;font-size:1.05rem;background:var(--cream);color:var(--accent);border:2px solid var(--accent)}
 .btn:active{transform:scale(.97)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);box-shadow:0 3px 0 #2c7300}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);box-shadow:0 3px 0 var(--main-dk)}
 .btn.ghost{background:transparent;border-color:transparent;color:var(--muted);font-size:.95rem}
 .muted{color:var(--muted)}
 #msgText{white-space:pre-line}
@@ -61,7 +61,7 @@ kbd{font-family:var(--font-title);background:var(--cream);color:var(--accent);bo
 
 /* ---------- 이미지 교체 슬롯 (DOM) ---------- */
 .img-slot{display:grid;place-items:center;border-radius:10px;font-size:.7rem;color:var(--muted);overflow:hidden;
-  background:color-mix(in srgb,var(--tint,#3D9E00) 18%,transparent);border:2px dashed var(--line)}
+  background:color-mix(in srgb,var(--tint,#3528a5) 14%,transparent);border:2px dashed var(--line)}
 .img-slot{position:relative}
 .img-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
 .img-slot.filled{background:none;border:0}
@@ -89,10 +89,10 @@ kbd{font-family:var(--font-title);background:var(--cream);color:var(--accent);bo
 #select{padding:0;overflow:hidden}
 .sel-wrap{position:relative;z-index:1;width:min(100%,560px);height:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
   padding:calc(env(safe-area-inset-top,0px) + clamp(28px,9vh,80px)) 16px calc(env(safe-area-inset-bottom,0px) + clamp(20px,6vh,48px))}
-.sel-q{font-size:clamp(1.15rem,4.6vw,1.5rem);color:#3d4a3a;font-weight:700;letter-spacing:.02em}
+.sel-q{font-size:clamp(1.15rem,4.6vw,1.5rem);color:var(--text);font-weight:700;letter-spacing:.02em}
 .sel-chars{display:flex;align-items:center;justify-content:center;gap:clamp(8px,4vw,28px);width:100%}
 .pick-card{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px;color:var(--text)}
-.pick-card .frame{position:relative;width:clamp(104px,min(30vw,26vh),190px);aspect-ratio:1;display:grid;place-items:center;--b:rgba(61,74,58,.28);
+.pick-card .frame{position:relative;width:clamp(104px,min(30vw,26vh),190px);aspect-ratio:1;display:grid;place-items:center;--b:rgba(30,24,82,.25);
   background:                                                 /* 네 모서리 괄호 */
     linear-gradient(var(--b),var(--b)) left top/26px 4px no-repeat, linear-gradient(var(--b),var(--b)) left top/4px 26px no-repeat,
     linear-gradient(var(--b),var(--b)) right top/26px 4px no-repeat, linear-gradient(var(--b),var(--b)) right top/4px 26px no-repeat,
@@ -103,21 +103,21 @@ kbd{font-family:var(--font-title);background:var(--cream);color:var(--accent);bo
 .pick-card .img-slot img{animation:float 2.4s ease-in-out infinite alternate}
 .pick-card.p2 .img-slot img{animation-delay:-1.2s}
 @keyframes float{to{transform:translateY(-6px)}}
-.pick-card b{font-size:1.05rem;font-weight:700;-webkit-text-stroke:.5px currentColor;color:#3d4a3a}
+.pick-card b{font-size:1.05rem;font-weight:700;-webkit-text-stroke:.5px currentColor;color:var(--text)}
 .pick-card small{font-size:.75rem;color:var(--muted)}
-.pick-card.on .frame{--b:#3d4a3a;transform:scale(1.06)}
+.pick-card.on .frame{--b:var(--text);transform:scale(1.06)}
 .pick-card.on b{color:var(--c)}
 .pick-card.p1{--c:var(--p1)} .pick-card.p2{--c:var(--p2)}
 .pick-card:not(.on) .img-slot{opacity:.8}
-.sel-rope{flex:none;width:clamp(16px,6vw,48px);height:0;border-top:3px dashed #c99a5b;align-self:center;margin-bottom:46px}
+.sel-rope{flex:none;width:clamp(16px,6vw,48px);height:0;border-top:3px dashed var(--main);align-self:center;margin-bottom:46px}
 .sel-actions{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;width:min(100%,420px)}
 .sel-btn{display:grid;place-items:center;font-family:var(--font-title);font-weight:700;color:var(--cream);border-radius:12px}
-.sel-btn.back{justify-self:start;width:58px;height:42px;font-size:1.3rem;background:#c9c4b0;border:2px solid #b6b09a}
-.sel-btn.ok{width:104px;height:58px;font-size:1.9rem;background:var(--accent);border:3px solid #2c7300;box-shadow:inset 0 0 0 3px rgba(246,251,219,.35)}
-.sel-btn.ok:disabled{background:#c9c4b0;border-color:#b6b09a;box-shadow:none;opacity:1;cursor:default}
+.sel-btn.back{justify-self:start;width:58px;height:42px;font-size:1.3rem;background:#9fb3dc;border:2px solid #8199c9}
+.sel-btn.ok{width:104px;height:58px;font-size:1.9rem;background:var(--accent);border:3px solid var(--main-dk);box-shadow:inset 0 0 0 3px rgba(244,248,255,.35)}
+.sel-btn.ok:disabled{background:#9fb3dc;border-color:#8199c9;box-shadow:none;opacity:1;cursor:default}
 .sel-btn:not(:disabled):active{transform:scale(.96)}
 .sel-test{position:absolute;z-index:1;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);font-size:.72rem;color:var(--muted);
-  border:1.5px dashed var(--line);border-radius:999px;padding:4px 10px;background:rgba(246,251,219,.7)}
+  border:1.5px dashed var(--line);border-radius:999px;padding:4px 10px;background:rgba(244,248,255,.7)}
 @media (orientation:landscape) and (max-height:520px){ .pick-card .frame{width:clamp(84px,26vh,120px)} .sel-wrap{padding-top:calc(env(safe-area-inset-top,0px) + 16px);padding-bottom:16px} .sel-rope{margin-bottom:40px} }
 /* 방 코드 */
 #roomHost,#roomGuest{display:flex;flex-direction:column;gap:12px}
@@ -148,20 +148,20 @@ kbd{font-family:var(--font-title);background:var(--cream);color:var(--accent);bo
 #hud button{pointer-events:auto}
 .hud-top{display:flex;align-items:center;gap:6px}
 .hud-top .sp{flex:1}
-.pill{padding:5px 11px;border-radius:999px;background:rgba(246,251,219,.92);color:var(--text);border:1.5px solid var(--line);font-size:.9rem;white-space:nowrap;font-weight:700}
+.pill{padding:5px 11px;border-radius:999px;background:rgba(244,248,255,.92);color:var(--text);border:1.5px solid var(--line);font-size:.9rem;white-space:nowrap;font-weight:700}
 .pill.me{color:#fff;border-color:transparent}
 .btn-sound.float{position:fixed;z-index:25;top:calc(env(safe-area-inset-top,0px) + 12px);right:calc(env(safe-area-inset-right,0px) + 12px);
-  width:42px;height:42px;border-radius:50%;background:rgba(246,251,219,.92);border:2px solid var(--accent);font-size:1.1rem;display:grid;place-items:center}
+  width:42px;height:42px;border-radius:50%;background:rgba(244,248,255,.92);border:2px solid var(--accent);font-size:1.1rem;display:grid;place-items:center}
 body.ingame .btn-sound.float{display:none}            /* 게임 중에는 HUD의 소리 버튼 사용 */
 .btn-sound.off{border-color:var(--line);opacity:.75}
 .btn-sound:active{transform:scale(.93)}
-.icon-btn{width:38px;height:38px;border-radius:12px;background:rgba(246,251,219,.92);color:var(--accent);border:2px solid var(--accent);font-size:1.05rem;flex:none}
-.hud-score{display:flex;align-items:baseline;gap:6px;background:var(--accent);color:var(--cream);border:2px solid #2c7300;border-radius:16px;
-  padding:3px 16px 4px;box-shadow:0 3px 0 rgba(36,66,12,.25);margin-top:-2px}
+.icon-btn{width:38px;height:38px;border-radius:12px;background:rgba(244,248,255,.92);color:var(--accent);border:2px solid var(--accent);font-size:1.05rem;flex:none}
+.hud-score{display:flex;align-items:baseline;gap:6px;background:var(--accent);color:var(--cream);border:2px solid var(--main-dk);border-radius:16px;
+  padding:3px 16px 4px;box-shadow:0 3px 0 rgba(30,24,82,.25);margin-top:-2px}
 .hud-score small{font-size:.8rem;opacity:.9}
 .hud-score b{font-size:clamp(1.5rem,5.6vw,2.1rem);line-height:1.1;font-weight:700;letter-spacing:.01em}
 .hud-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
-.stat{background:rgba(246,251,219,.92);border:1.5px solid var(--line);border-radius:12px;padding:3px 4px 4px;text-align:center;display:flex;flex-direction:column;line-height:1.15}
+.stat{background:rgba(244,248,255,.92);border:1.5px solid var(--line);border-radius:12px;padding:3px 4px 4px;text-align:center;display:flex;flex-direction:column;line-height:1.15}
 .stat small{font-size:clamp(.6rem,2.3vw,.75rem);color:var(--muted);font-weight:700}
 .stat b{font-size:clamp(1rem,4vw,1.3rem);color:var(--text);font-weight:700}
 .stat.water b{color:#1f6fc0}
@@ -197,8 +197,8 @@ body.touch #controls{display:flex}
 }
 
 /* ---------- 오버레이 / 토스트 ---------- */
-.overlay{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:rgba(36,66,12,.55)}
-.card{width:min(100%,360px);background:var(--cream);border:3px solid var(--accent);border-radius:20px;padding:22px 18px;text-align:center;display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 0 rgba(36,66,12,.25)}
+.overlay{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:rgba(30,24,82,.55)}
+.card{width:min(100%,360px);background:var(--cream);border:3px solid var(--accent);border-radius:20px;padding:22px 18px;text-align:center;display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 0 rgba(30,24,82,.25)}
 .card h2{font-weight:400;font-size:1.7rem;color:var(--accent)}
 .code{background:var(--cream);border:2px solid var(--accent);border-radius:14px;padding:8px 0 8px 12px;font-size:2.8rem;letter-spacing:12px;color:var(--accent);padding-left:12px}
 .score-total{display:flex;flex-direction:column;align-items:center;gap:2px;margin:2px 0}
@@ -218,7 +218,7 @@ body.touch #controls{display:flex}
   #ovResult .card h2,#ovResult .score-total{grid-column:1} #ovResult .breakdown{grid-column:2;grid-row:1/span 2}
   #ovResult .card .btn{grid-column:auto} }
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 26vh);transform:translateX(-50%);z-index:40;
-  background:var(--accent);color:var(--on-accent);border:2px solid #2c7300;padding:9px 16px;border-radius:999px;font-size:.95rem;
+  background:var(--accent);color:var(--on-accent);border:2px solid var(--main-dk);padding:9px 16px;border-radius:999px;font-size:.95rem;
   white-space:nowrap;max-width:94vw;overflow:hidden;text-overflow:ellipsis;transition:opacity .25s;pointer-events:none}
 #toast.hide{opacity:0}
 </style>
@@ -366,7 +366,7 @@ body.touch #controls{display:flex}
 const IMAGES = {
   //  src  : 기본 이미지      jump : 점프(공중) 중 이미지      faceLeft : 원본 그림이 왼쪽을 보고 있으면 true (좌우 반전 기준)
   //  jumpFaceLeft : 점프 이미지가 기본 이미지와 다른 쪽을 보고 있을 때만 따로 지정
-  'IMG-00': { name:'게임 타이틀', src:'', tint:'#3D9E00' },   // 타이틀 이미지 — src에 이미지를 넣으면 메인 화면에 표시
+  'IMG-00': { name:'게임 타이틀', src:'', tint:'#3528a5' },   // 타이틀 이미지 — src에 이미지를 넣으면 메인 화면에 표시
   'IMG-01': { name:'P1 캐릭터 (양파쿵야)', tint:'#3D9E00', faceLeft:false, jumpFaceLeft:true,   // 서 있는 그림은 오른쪽, 점프 그림은 왼쪽을 봄
               body:87, bodyCX:0.50, jumpBody:85, jumpCX:0.39, hitTop:0.20,   // hitTop: 판정에서 뺄 윗부분 비율 (P1은 뿔)
               src:'data:image/webp;base64,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',
@@ -1027,7 +1027,7 @@ function checkEvents(id){
   if(S.phase==='run' && S.pl[id].y+S.pl[id].h > S.lava.y+LAVA.KILL) return gameOver('lava');
   const p=S.pl[id];
   for(const c of COINS){ if(S.coins.has(c.i)) continue;                 // 코인
-    if(overlap(p, coinRect(c))){ S.coins.add(c.i); net.send({t:'coin',i:c.i}); const B=BONUS[c.kind||0]; popFx(`+${B.pts}`, '#3D9E00', p); sfx(988,.08,'triangle'); sfx(1319+(c.kind||0)*120,.12,'triangle',.03); } }
+    if(overlap(p, coinRect(c))){ S.coins.add(c.i); net.send({t:'coin',i:c.i}); const B=BONUS[c.kind||0]; popFx(`+${B.pts}`, '#3528a5', p); sfx(988,.08,'triangle'); sfx(1319+(c.kind||0)*120,.12,'triangle',.03); } }
   const hm=heightM(p.y+p.h); if(p.grounded && hm>S.best) S.best=hm;
   const band=Math.floor(hm/BAND_M);
   if(band>S.zone){ S.zone=band; const lap=Math.floor(band/BANDS.length);
@@ -1386,18 +1386,37 @@ const flipFor = (key, face, jump) => { const im=IMAGES[key], left = (jump && im.
 
 /* ---------- 레이어 1: 배경 + 타일 (camX, camY 적용) ---------- */
 /* ---------- 맵 스킨: 캐릭터·갈매기·건물과 같은 '굵은 외곽선 + 단색 셀 셰이딩' 만화풍 ---------- */
-const SKIN = {
-  LINE:'#3a3a3a', LW:1.2,                                 // 외곽선 색·두께 (캐릭터 그림 선 굵기에 맞춤)
-  SKY_TOP:['#bfeeff','#a6e1ff','#ffd6ad','#5c62a8'],      // 높이에 따라: 낮 → 맑은 하늘 → 노을 → 밤
-  SKY_BOT:['#f6fbdb','#e8f8ff','#fff0d8','#8b7fc6'],
-  HILL:['#c7e8a6','#9fd36f'],                              // 뒷산(먼 산, 가까운 산)
-  GRASS:'#8fd14f', GRASS_HI:'#b9e97c', GRASS_DK:'#6cb33a',  // 풀 (UI 그린 #3D9E00 계열 밝은 톤)
-  DIRT:'#e2c49a', DIRT_DK:'#c9a575', PEBBLE:'#f0dcb8',     // 흙 (크림 계열)
-  WALL:'#efe2bf', WALL_DK:'#dcc79a',                       // 양옆 벽
-  WOOD:'#f0b86a', WOOD_DK:'#cf8f3f', WOOD_HI:'#ffd79a',
-  ICE:'#cdf3ff', ICE_HI:'#ffffff', ICE_DK:'#93d8f2',
+const SKIN = { LW:1.2 };     // 맵 색은 높이에 따라 낮 → 밤으로 바뀜 (아래 SKIN_DAY / SKIN_NIGHT 사이를 섞음)
+const SKIN_DAY = {           // 레퍼런스: 낮 도시 (파란 하늘, 파란 빌딩, 초록 잔디, 갈색 벽돌)
+  LINE:'#1f3481',
+  HILL:['#538ede','#2d50a6'],
+  GRASS:'#99d04d', GRASS_HI:'#cef86e', GRASS_DK:'#5f9a2e',
+  DIRT:'#a3542f', DIRT_DK:'#6e3423', PEBBLE:'#c9714a',            // 벽돌
+  WALL:'#2d50a6', WALL_DK:'#66a8f4',                               // 양옆 빌딩 벽 / 창문
+  WOOD:'#538ede', WOOD_DK:'#2d50a6', WOOD_HI:'#8fc0ff',            // 철골 발판
+  ICE:'#cfe9ff', ICE_HI:'#ffffff', ICE_DK:'#7db9da', ICE_LINE:'#2d50a6',
   SPRING:'#ff7b7b', SPRING_HI:'#ffb3b3',
+  CLOUD:'#ffffff', CLOUD_SH:'#a8d0f5',
 };
+const SKIN_NIGHT = {         // 레퍼런스: 밤 도시 (남색 하늘, 보라 빌딩, 노란 창문, 보라 땅)
+  LINE:'#0d0b3d',
+  HILL:['#342b9d','#28236a'],
+  GRASS:'#6f52bc', GRASS_HI:'#9d86e0', GRASS_DK:'#4a3592',
+  DIRT:'#3d3399', DIRT_DK:'#272064', PEBBLE:'#5547b8',
+  WALL:'#28236a', WALL_DK:'#f5c542',
+  WOOD:'#423c8d', WOOD_DK:'#28236a', WOOD_HI:'#6b5bae',
+  ICE:'#b9b3f0', ICE_HI:'#e8e4ff', ICE_DK:'#6b5bae', ICE_LINE:'#28236a',
+  SPRING:'#e86b9a', SPRING_HI:'#f5a6c4',
+  CLOUD:'#baa5cd', CLOUD_SH:'#8f7fc0',
+};
+const NIGHT_FROM=150, NIGHT_TO=230;   // 이 높이(m) 사이에서 낮 → 밤으로 바뀜
+const hexMix=(a,b,t)=>'#'+[0,2,4].map(i=>Math.round(parseInt(a.substr(i+1,2),16)*(1-t)+parseInt(b.substr(i+1,2),16)*t).toString(16).padStart(2,'0')).join('');
+function toneSkin(hm){
+  const t=Math.max(0,Math.min(1,(hm-NIGHT_FROM)/(NIGHT_TO-NIGHT_FROM)));
+  for(const k in SKIN_DAY){ const a=SKIN_DAY[k], b=SKIN_NIGHT[k]; SKIN[k] = Array.isArray(a) ? a.map((x,i)=>hexMix(x,b[i],t)) : hexMix(a,b,t); }
+  SKIN.night=t;
+}
+toneSkin(0);
 function rrPath(c,x,y,w,h,r){ r=Math.min(r,w/2,h/2); c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
 // 우주 장식: 높이(m)마다 정해진 위치에 그려지고, 배경이라 천천히 스크롤됨(시차 0.35)
 const SPACE_DECOR = [
@@ -1458,8 +1477,8 @@ function cloud(c,x,y,s){                                   // 외곽선 있는 �
   c.beginPath(); c.moveTo(x-34*s,y+10*s);
   c.arc(x-20*s,y+2*s,14*s,Math.PI*.9,Math.PI*1.75); c.arc(x+2*s,y-6*s,18*s,Math.PI*1.1,Math.PI*1.9);
   c.arc(x+24*s,y+2*s,13*s,Math.PI*1.25,Math.PI*.1); c.lineTo(x+34*s,y+10*s); c.closePath();
-  c.fillStyle='#ffffff'; c.fill(); c.lineWidth=SKIN.LW; c.strokeStyle=SKIN.LINE; c.stroke();
-  c.fillStyle='rgba(166,215,240,.45)'; c.beginPath(); c.ellipse(x,y+8*s,26*s,3*s,0,0,Math.PI*2); c.fill();
+  c.fillStyle=SKIN.CLOUD; c.fill(); c.lineWidth=SKIN.LW; c.strokeStyle=SKIN.LINE; c.stroke();
+  c.save(); c.globalAlpha*=.55; c.fillStyle=SKIN.CLOUD_SH; c.beginPath(); c.ellipse(x,y+8*s,26*s,3*s,0,0,Math.PI*2); c.fill(); c.restore();
 }
 function grassTop(c,x,y,w,depth){                         // 위쪽 풀: 아래 가장자리가 물결 모양
   c.fillStyle=SKIN.GRASS; c.beginPath(); c.moveTo(x,y); c.lineTo(x+w,y); c.lineTo(x+w,y+depth);
@@ -1495,7 +1514,7 @@ function drawRun(c,ch,x,y,w){                              // 한 줄로 이어�
     c.fillStyle=SKIN.ICE_HI; c.fillRect(x+6,y+5,Math.max(0,w-12),3);
     c.strokeStyle=SKIN.ICE_HI; c.lineWidth=2.2; for(let i=0;i<w/30;i++){ const sx=x+12+i*30; c.beginPath(); c.moveTo(sx,y+16); c.lineTo(sx+6,y+10); c.stroke(); }
     c.restore();
-    rrPath(c,x+1,y+2,w-2,TS-4,7); c.lineWidth=SKIN.LW; c.strokeStyle='#3a6f86'; c.stroke();
+    rrPath(c,x+1,y+2,w-2,TS-4,7); c.lineWidth=SKIN.LW; c.strokeStyle=SKIN.ICE_LINE; c.stroke();
   }
 }
 function drawGimmick(c,ch,tx,ty,n){                        // 새 기믹 발판: 임시 박스 (+ 상태 표현)
@@ -1535,8 +1554,9 @@ function drawSpring(c,X,Y){                                 // 점프대: 빨간
 function drawWorld(t){
   const c=wc;
   const hm=Math.max(0,(FLOOR_Y-(camY+VH/2))/TS);          // 화면 가운데 높이(m)
-  const SKY=[ [0,'#86c8f0','#9fd5f2'], [60,'#8fd8ff','#e2f6ff'], [120,'#5aa8f0','#bfe6ff'],   // 들판 → 맑은 하늘 → 높은 하늘
-              [170,'#3d5fc4','#ffc9a6'], [220,'#1c1f5e','#5b4a9e'], [280,'#070a24','#1b1446'] ];   // 성층권 노을 → 밤 → 우주
+  const SKY=[ [0,'#86c8f0','#9fd5f2'], [60,'#5e9ff9','#a9d2fb'], [120,'#4a86e6','#8fbdf5'],   // 출발(시작 그림과 맞춤) → 낮 도시 하늘 → 높은 하늘
+              [170,'#3a3f9e','#7d6fd0'], [220,'#161656','#342b9d'], [280,'#05052a','#14124a'] ];   // 해질녘 보라 → 밤 도시 하늘 → 우주
+  toneSkin(hm);
   const mix=(a,b,t)=>'#'+[0,2,4].map(i=>Math.round(parseInt(a.substr(i+1,2),16)*(1-t)+parseInt(b.substr(i+1,2),16)*t).toString(16).padStart(2,'0')).join('');
   let si=0; while(si<SKY.length-2 && hm>=SKY[si+1][0]) si++;
   const f=clamp((hm-SKY[si][0])/(SKY[si+1][0]-SKY[si][0]),0,1);
@@ -1561,13 +1581,14 @@ function drawWorld(t){
   else if(lift<VH){ hill(SKIN.HILL[0],.25,52,VH-78+lift,140); hill(SKIN.HILL[1],.5,34,VH-36+lift,96); }   // 이미지가 없으면 코드로 그린 뒷산
   c.save(); c.translate(-Math.round(camX), -Math.round(camY));
   const ty0=Math.max(0,Math.floor(camY/TS)), ty1=Math.min(MH-1,Math.ceil((camY+VH)/TS));
-  // 양옆 벽: 크림색 돌벽 + 안쪽 외곽선
+  // 양옆 벽: 사무실 빌딩 외벽 + 창문 (밤에는 창문에 노란 불이 켜짐)
   for(const wx of [0, MW-1]){
     const X=wx*TS, Y0=ty0*TS, Y1=Math.min(FL_ROW,ty1+1)*TS;
     if(Y1<=Y0) continue;
     c.fillStyle=SKIN.WALL; c.fillRect(X,Y0,TS,Y1-Y0);
-    for(let ty=ty0; ty<Math.min(FL_ROW,ty1+1); ty++){ const yy=ty*TS, off=(ty%2)*10;
-      c.fillStyle=SKIN.WALL_DK; rrPath(c,X+3+off*0.4,yy+4,12,8,4); c.fill(); }
+    for(let ty=ty0; ty<Math.min(FL_ROW,ty1+1); ty++){ const yy=ty*TS;
+      for(let k=0;k<2;k++){ const lit = ((ty*7+k*3+wx)%5)!==0;                       // 창문 일부는 꺼져 있음
+        c.fillStyle = lit ? SKIN.WALL_DK : SKIN.LINE; c.fillRect(X+4+k*9,yy+5,7,10); } }
     c.strokeStyle=SKIN.LINE; c.lineWidth=SKIN.LW; c.beginPath(); const ix = wx===0 ? X+TS : X; c.moveTo(ix,Y0); c.lineTo(ix,Y1); c.stroke();
   }
   // 바닥(출발 지점): 풀 + 흙
@@ -1696,7 +1717,7 @@ function drawSprites(t){
       const ay=VH*0.24; c.beginPath(); c.moveTo(sx, up?ay:VH-6); c.lineTo(sx-8, up?ay+12:VH-18); c.lineTo(sx+8, up?ay+12:VH-18); c.fill(); } }
   drawLava(c);
   if(S.phase==='count'){ const n=Math.ceil(-t);
-    c.fillStyle='rgba(36,66,12,.35)'; c.fillRect(0,0,VW,VH); c.fillStyle='#fff'; c.textAlign='center'; c.textBaseline='middle';
+    c.fillStyle='rgba(30,24,82,.35)'; c.fillRect(0,0,VW,VH); c.fillStyle='#fff'; c.textAlign='center'; c.textBaseline='middle';
     c.font='bold 86px BaekmukGulimChe, sans-serif'; c.fillText(n>0?n:'',VW/2,VH/2);   // 카운트 숫자만 표시
   }
 }
